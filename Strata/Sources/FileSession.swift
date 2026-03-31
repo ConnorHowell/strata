@@ -1,0 +1,184 @@
+// FileSession.swift
+// Strata - macOS Hex Editor
+
+import AppKit
+import Foundation
+
+// MARK: - FileSession
+
+/// Represents a single open file editing session with its own piece table and undo stack.
+public final class FileSession {
+
+    // MARK: - Public API
+
+    /// The URL of the file on disk, `nil` for untitled documents.
+    public private(set) var fileURL: URL?
+
+    /// The piece table backing all edits for this session.
+    public let pieceTable: PieceTable
+
+    /// The undo manager for this session.
+    public let undoManager: UndoManager
+
+    /// Whether the session has unsaved modifications.
+    public var isModified: Bool {
+        pieceTable.isDirty
+    }
+
+    /// A display name suitable for a tab title.
+    public var fileName: String {
+        guard let url = fileURL else { return "Untitled" }
+        return url.lastPathComponent
+    }
+
+    /// Creates a new empty session.
+    public init() {
+        self.undoManager = UndoManager()
+        self.pieceTable = PieceTable(data: Data(), undoManager: undoManager)
+        self.fileURL = nil
+    }
+
+    /// Opens a file at the given URL using memory-mapped I/O.
+    ///
+    /// - Parameter url: The file URL to open.
+    /// - Throws: An error if the file cannot be read.
+    public init(url: URL) throws {
+        self.undoManager = UndoManager()
+        let data = try Data(contentsOf: url, options: .mappedIfSafe)
+        self.pieceTable = PieceTable(data: data, undoManager: undoManager)
+        self.fileURL = url
+    }
+
+    /// Saves the current content to the existing file URL.
+    ///
+    /// - Throws: An error if saving fails or no file URL is set.
+    public func save() throws {
+        guard let url = fileURL else {
+            throw FileSessionError.noFileURL
+        }
+        try pieceTable.save(to: url)
+    }
+
+    /// Saves the current content to a new URL.
+    ///
+    /// - Parameter url: The destination URL.
+    /// - Throws: An error if saving fails.
+    public func save(to url: URL) throws {
+        try pieceTable.save(to: url)
+        fileURL = url
+    }
+
+    /// Cleans up resources when the session is closed.
+    public func close() {
+        undoManager.removeAllActions()
+    }
+}
+
+// MARK: - FileSessionError
+
+/// Errors specific to file session operations.
+public enum FileSessionError: Error, LocalizedError {
+    /// No file URL is associated with the session.
+    case noFileURL
+
+    public var errorDescription: String? {
+        switch self {
+        case .noFileURL:
+            return "No file URL is set. Use Save As to specify a location."
+        }
+    }
+}
+
+// MARK: - SessionManagerDelegate
+
+/// Delegate protocol for observing changes to the session manager.
+public protocol SessionManagerDelegate: AnyObject {
+    /// Called when the active session changes.
+    func sessionManagerDidChangeActive(_ manager: SessionManager)
+    /// Called when a new session is added.
+    func sessionManagerDidAddSession(_ manager: SessionManager, at index: Int)
+    /// Called when a session is removed.
+    func sessionManagerDidRemoveSession(_ manager: SessionManager, at index: Int)
+}
+
+// MARK: - SessionManager
+
+/// Manages multiple open file sessions (tabs).
+public final class SessionManager {
+
+    // MARK: - Public API
+
+    /// The delegate for session change notifications.
+    public weak var delegate: SessionManagerDelegate?
+
+    /// All currently open sessions.
+    public private(set) var sessions: [FileSession] = []
+
+    /// The index of the currently active session.
+    public private(set) var activeSessionIndex: Int = 0
+
+    /// The currently active session, or `nil` if none are open.
+    public var activeSession: FileSession? {
+        guard !sessions.isEmpty, activeSessionIndex < sessions.count else { return nil }
+        return sessions[activeSessionIndex]
+    }
+
+    /// Creates a session manager with an initial empty session.
+    public init() {
+        let initial = FileSession()
+        sessions.append(initial)
+    }
+
+    /// Opens a file and creates a new session for it.
+    ///
+    /// - Parameter url: The file URL to open.
+    /// - Returns: The newly created session.
+    @discardableResult
+    public func openFile(at url: URL) throws -> FileSession {
+        let session = try FileSession(url: url)
+        sessions.append(session)
+        let index = sessions.count - 1
+        delegate?.sessionManagerDidAddSession(self, at: index)
+        setActive(index: index)
+        return session
+    }
+
+    /// Creates a new untitled session.
+    ///
+    /// - Returns: The newly created session.
+    @discardableResult
+    public func newSession() -> FileSession {
+        let session = FileSession()
+        sessions.append(session)
+        let index = sessions.count - 1
+        delegate?.sessionManagerDidAddSession(self, at: index)
+        setActive(index: index)
+        return session
+    }
+
+    /// Closes the session at the given index.
+    ///
+    /// - Parameter index: The index of the session to close.
+    public func closeSession(at index: Int) {
+        guard index >= 0, index < sessions.count else { return }
+        sessions[index].close()
+        sessions.remove(at: index)
+        delegate?.sessionManagerDidRemoveSession(self, at: index)
+        if sessions.isEmpty {
+            newSession()
+        } else if activeSessionIndex >= sessions.count {
+            setActive(index: sessions.count - 1)
+        } else {
+            delegate?.sessionManagerDidChangeActive(self)
+        }
+    }
+
+    /// Sets the active session by index.
+    ///
+    /// - Parameter index: The index of the session to activate.
+    public func setActive(index: Int) {
+        guard index >= 0, index < sessions.count else { return }
+        activeSessionIndex = index
+        delegate?.sessionManagerDidChangeActive(self)
+    }
+}

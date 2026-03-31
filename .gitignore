@@ -1,0 +1,21 @@
+## Build generated
+build/
+DerivedData/
+
+## Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/
+xcuserdata/
+
+## macOS
+.DS_Store
+*.swp
+*~
+
+## SwiftPM
+.build/
+Packages/
+
+## Context directory
+.context/

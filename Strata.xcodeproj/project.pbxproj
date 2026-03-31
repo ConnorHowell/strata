@@ -1,0 +1,568 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001; };
+		AA000002 /* HexGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002; };
+		AA000003 /* HexGridViewDrawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003; };
+		AA000004 /* HexGridViewInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004; };
+		AA000005 /* PieceTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005; };
+		AA000006 /* FileSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006; };
+		AA000007 /* DiffEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007; };
+		AA000008 /* ChecksumEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008; };
+		AA000009 /* KeyBindings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009; };
+		AA000010 /* IntelHex.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010; };
+		AA000011 /* SRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011; };
+		AA000012 /* FindReplacePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012; };
+		AA000013 /* GoToOffsetSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013; };
+		AA000014 /* ChecksumPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014; };
+		AA000015 /* DiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015; };
+		AA000016 /* TabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016; };
+		AA000017 /* AppDelegate+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018; };
+		AA000018 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000019; };
+		AA000019 /* DataInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000020; };
+		AA000020 /* FindReplaceWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000021; };
+		AA100001 /* PieceTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000001; };
+		AA100002 /* DiffEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000002; };
+		AA100003 /* ChecksumEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000003; };
+		AA100004 /* IntelHexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000004; };
+		AA100005 /* SRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000005; };
+		AA200001 /* StrataUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000001; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AE000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B0000001;
+			remoteInfo = Strata;
+		};
+		AE000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B0000001;
+			remoteInfo = Strata;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		AB000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AB000002 /* HexGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexGridView.swift; sourceTree = "<group>"; };
+		AB000003 /* HexGridViewDrawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexGridViewDrawing.swift; sourceTree = "<group>"; };
+		AB000004 /* HexGridViewInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexGridViewInput.swift; sourceTree = "<group>"; };
+		AB000005 /* PieceTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieceTable.swift; sourceTree = "<group>"; };
+		AB000006 /* FileSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSession.swift; sourceTree = "<group>"; };
+		AB000007 /* DiffEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffEngine.swift; sourceTree = "<group>"; };
+		AB000008 /* ChecksumEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumEngine.swift; sourceTree = "<group>"; };
+		AB000009 /* KeyBindings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindings.swift; sourceTree = "<group>"; };
+		AB000010 /* IntelHex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelHex.swift; sourceTree = "<group>"; };
+		AB000011 /* SRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRecord.swift; sourceTree = "<group>"; };
+		AB000012 /* FindReplacePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindReplacePanel.swift; sourceTree = "<group>"; };
+		AB000013 /* GoToOffsetSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoToOffsetSheet.swift; sourceTree = "<group>"; };
+		AB000014 /* ChecksumPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumPanel.swift; sourceTree = "<group>"; };
+		AB000015 /* DiffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffView.swift; sourceTree = "<group>"; };
+		AB000016 /* TabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBar.swift; sourceTree = "<group>"; };
+		AB000017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AB000018 /* AppDelegate+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Actions.swift"; sourceTree = "<group>"; };
+		AB000019 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		AB000020 /* DataInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataInspector.swift; sourceTree = "<group>"; };
+		AB000021 /* FindReplaceWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindReplaceWindow.swift; sourceTree = "<group>"; };
+		AC000001 /* PieceTableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieceTableTests.swift; sourceTree = "<group>"; };
+		AC000002 /* DiffEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffEngineTests.swift; sourceTree = "<group>"; };
+		AC000003 /* ChecksumEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumEngineTests.swift; sourceTree = "<group>"; };
+		AC000004 /* IntelHexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelHexTests.swift; sourceTree = "<group>"; };
+		AC000005 /* SRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRecordTests.swift; sourceTree = "<group>"; };
+		AC000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AD000001 /* StrataUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrataUITests.swift; sourceTree = "<group>"; };
+		AD000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B1000001 /* Strata.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Strata.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1000002 /* StrataTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StrataTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1000003 /* StrataUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StrataUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B2000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C0000001 = {
+			isa = PBXGroup;
+			children = (
+				C0000002 /* Strata */,
+				C0000005 /* StrataTests */,
+				C0000006 /* StrataUITests */,
+				C0000007 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C0000002 /* Strata */ = {
+			isa = PBXGroup;
+			children = (
+				C0000003 /* Sources */,
+				C0000008 /* Resources */,
+			);
+			path = Strata;
+			sourceTree = "<group>";
+		};
+		C0000003 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				AB000001 /* AppDelegate.swift */,
+				AB000018 /* AppDelegate+Actions.swift */,
+				AB000019 /* main.swift */,
+				AB000002 /* HexGridView.swift */,
+				AB000003 /* HexGridViewDrawing.swift */,
+				AB000004 /* HexGridViewInput.swift */,
+				AB000005 /* PieceTable.swift */,
+				AB000006 /* FileSession.swift */,
+				AB000007 /* DiffEngine.swift */,
+				AB000008 /* ChecksumEngine.swift */,
+				AB000009 /* KeyBindings.swift */,
+				C0000004 /* Formats */,
+				C0000009 /* Views */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		C0000004 /* Formats */ = {
+			isa = PBXGroup;
+			children = (
+				AB000010 /* IntelHex.swift */,
+				AB000011 /* SRecord.swift */,
+			);
+			path = Formats;
+			sourceTree = "<group>";
+		};
+		C0000005 /* StrataTests */ = {
+			isa = PBXGroup;
+			children = (
+				AC000001 /* PieceTableTests.swift */,
+				AC000002 /* DiffEngineTests.swift */,
+				AC000003 /* ChecksumEngineTests.swift */,
+				AC000004 /* IntelHexTests.swift */,
+				AC000005 /* SRecordTests.swift */,
+				AC000006 /* Info.plist */,
+			);
+			path = StrataTests;
+			sourceTree = "<group>";
+		};
+		C0000006 /* StrataUITests */ = {
+			isa = PBXGroup;
+			children = (
+				AD000001 /* StrataUITests.swift */,
+				AD000002 /* Info.plist */,
+			);
+			path = StrataUITests;
+			sourceTree = "<group>";
+		};
+		C0000007 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B1000001 /* Strata.app */,
+				B1000002 /* StrataTests.xctest */,
+				B1000003 /* StrataUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C0000008 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AB000017 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		C0000009 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AB000012 /* FindReplacePanel.swift */,
+				AB000013 /* GoToOffsetSheet.swift */,
+				AB000014 /* ChecksumPanel.swift */,
+				AB000015 /* DiffView.swift */,
+				AB000016 /* TabBar.swift */,
+			AB000020 /* DataInspector.swift */,
+				AB000021 /* FindReplaceWindow.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B0000001 /* Strata */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B3000001 /* Build configuration list for PBXNativeTarget "Strata" */;
+			buildPhases = (
+				B4000001 /* Sources */,
+				B2000001 /* Frameworks */,
+				B5000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Strata;
+			productName = Strata;
+			productReference = B1000001 /* Strata.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B0000002 /* StrataTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B3000002 /* Build configuration list for PBXNativeTarget "StrataTests" */;
+			buildPhases = (
+				B4000002 /* Sources */,
+				B2000002 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B6000001 /* PBXTargetDependency */,
+			);
+			name = StrataTests;
+			productName = StrataTests;
+			productReference = B1000002 /* StrataTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B0000003 /* StrataUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B3000003 /* Build configuration list for PBXNativeTarget "StrataUITests" */;
+			buildPhases = (
+				B4000003 /* Sources */,
+				B2000003 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B6000002 /* PBXTargetDependency */,
+			);
+			name = StrataUITests;
+			productName = StrataUITests;
+			productReference = B1000003 /* StrataUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AF000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					B0000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					B0000002 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = B0000001;
+					};
+					B0000003 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = B0000001;
+					};
+				};
+			};
+			buildConfigurationList = B3000004 /* Build configuration list for PBXProject "Strata" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = C0000001;
+			productRefGroup = C0000007 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B0000001 /* Strata */,
+				B0000002 /* StrataTests */,
+				B0000003 /* StrataUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B5000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B4000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001 /* AppDelegate.swift in Sources */,
+				AA000002 /* HexGridView.swift in Sources */,
+				AA000003 /* HexGridViewDrawing.swift in Sources */,
+				AA000004 /* HexGridViewInput.swift in Sources */,
+				AA000005 /* PieceTable.swift in Sources */,
+				AA000006 /* FileSession.swift in Sources */,
+				AA000007 /* DiffEngine.swift in Sources */,
+				AA000008 /* ChecksumEngine.swift in Sources */,
+				AA000009 /* KeyBindings.swift in Sources */,
+				AA000010 /* IntelHex.swift in Sources */,
+				AA000011 /* SRecord.swift in Sources */,
+				AA000012 /* FindReplacePanel.swift in Sources */,
+				AA000013 /* GoToOffsetSheet.swift in Sources */,
+				AA000014 /* ChecksumPanel.swift in Sources */,
+				AA000015 /* DiffView.swift in Sources */,
+				AA000016 /* TabBar.swift in Sources */,
+				AA000017 /* AppDelegate+Actions.swift in Sources */,
+				AA000018 /* main.swift in Sources */,
+				AA000019 /* DataInspector.swift in Sources */,
+				AA000020 /* FindReplaceWindow.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B4000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA100001 /* PieceTableTests.swift in Sources */,
+				AA100002 /* DiffEngineTests.swift in Sources */,
+				AA100003 /* ChecksumEngineTests.swift in Sources */,
+				AA100004 /* IntelHexTests.swift in Sources */,
+				AA100005 /* SRecordTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B4000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA200001 /* StrataUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B6000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B0000001 /* Strata */;
+			targetProxy = AE000001 /* PBXContainerItemProxy */;
+		};
+		B6000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B0000001 /* Strata */;
+			targetProxy = AE000002 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		D0000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D0000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		D1000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Strata/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.strata.hexeditor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D1000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Strata/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.strata.hexeditor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		D2000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = StrataTests/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.strata.hexeditor.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Strata.app/Contents/MacOS/Strata";
+			};
+			name = Debug;
+		};
+		D2000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = StrataTests/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.strata.hexeditor.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Strata.app/Contents/MacOS/Strata";
+			};
+			name = Release;
+		};
+		D3000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = StrataUITests/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.strata.hexeditor.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Strata;
+			};
+			name = Debug;
+		};
+		D3000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = StrataUITests/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.strata.hexeditor.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Strata;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B3000001 /* Build configuration list for PBXNativeTarget "Strata" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D1000001 /* Debug */,
+				D1000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B3000002 /* Build configuration list for PBXNativeTarget "StrataTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D2000001 /* Debug */,
+				D2000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B3000003 /* Build configuration list for PBXNativeTarget "StrataUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D3000001 /* Debug */,
+				D3000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B3000004 /* Build configuration list for PBXProject "Strata" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D0000001 /* Debug */,
+				D0000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = AF000001 /* Project object */;
+}
