@@ -101,6 +101,105 @@ final class DropTargetView: NSView {
     }
 }
 
+// MARK: - EmptyStateView
+
+/// A centered empty state shown when no files are open.
+final class EmptyStateView: NSView {
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
+        setupViews()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    private func setupViews() {
+        let logoView = StrataLogoMark(frame: NSRect(x: 0, y: 0, width: 80, height: 80))
+        logoView.translatesAutoresizingMaskIntoConstraints = false
+
+        let title = NSTextField(labelWithString: "Strata")
+        title.font = .systemFont(ofSize: 20, weight: .semibold)
+        title.textColor = .secondaryLabelColor
+        title.alignment = .center
+
+        let subtitle = NSTextField(labelWithString: "Drop a file here to open it")
+        subtitle.font = .systemFont(ofSize: 13)
+        subtitle.textColor = .tertiaryLabelColor
+        subtitle.alignment = .center
+
+        let hint = NSTextField(
+            labelWithString: "or use File \u{2192} Open (\u{2318}O)"
+                + " \u{00B7} File \u{2192} New (\u{2318}N)"
+        )
+        hint.font = .systemFont(ofSize: 11)
+        hint.textColor = .quaternaryLabelColor
+        hint.alignment = .center
+
+        let textStack = NSStackView(views: [logoView, title, subtitle, hint])
+        textStack.orientation = .vertical
+        textStack.alignment = .centerX
+        textStack.spacing = 8
+        textStack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(textStack)
+
+        NSLayoutConstraint.activate([
+            logoView.widthAnchor.constraint(equalToConstant: 80),
+            logoView.heightAnchor.constraint(equalToConstant: 80),
+            textStack.centerXAnchor.constraint(equalTo: centerXAnchor),
+            textStack.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
+    }
+}
+
+/// Draws the Strata "S" logo mark — five staggered rounded bars in monochrome.
+final class StrataLogoMark: NSView {
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    override var isFlipped: Bool { true }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard let ctx = NSGraphicsContext.current?.cgContext else { return }
+        let w = bounds.width
+        let h = bounds.height
+        let barH = h * 0.1
+        let gap = (h - barH * 5) / 6
+        let barW = w * 0.55
+
+        // x-offsets matching the SVG's S-curve shape (normalized)
+        let offsets: [CGFloat] = [0.35, -0.10, 0.13, 0.35, -0.10]
+
+        let color = NSColor.tertiaryLabelColor
+        ctx.setFillColor(color.cgColor)
+
+        for i in 0..<5 {
+            let x = (w - barW) / 2 + offsets[i] * barW * 0.4
+            let y = gap + CGFloat(i) * (barH + gap)
+            let rect = CGRect(x: x, y: y, width: barW, height: barH)
+            let path = CGPath(
+                roundedRect: rect,
+                cornerWidth: barH / 2,
+                cornerHeight: barH / 2,
+                transform: nil
+            )
+            ctx.addPath(path)
+            ctx.fillPath()
+        }
+    }
+}
+
 // MARK: - AppDelegate
 
 /// The main application delegate. Creates the window and wires all UI programmatically.
@@ -117,11 +216,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let checksumPanel = ChecksumPanel(frame: .zero)
     let dataInspector = DataInspector(frame: .zero)
     let splitView = NSSplitView()
+    let emptyStateView = EmptyStateView(frame: .zero)
     var isChecksumPanelVisible = false
+    var recentFileURLs: [URL] = []
+    static let maxRecentFiles = 10
+    /// Retains auxiliary windows (stats, diff) so ARC doesn't deallocate them.
+    var auxiliaryWindows: [NSWindow] = []
 
     // MARK: - NSApplicationDelegate
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        loadRecentFiles()
         setupMainMenu()
         setupWindow()
         sessionManager.delegate = self
@@ -154,6 +259,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Internal
 
     func refreshUI() {
+        let hasSessions = !sessionManager.sessions.isEmpty
+        emptyStateView.isHidden = hasSessions
+        splitView.isHidden = !hasSessions
+        tabBar.isHidden = !hasSessions
+
         let titles = sessionManager.sessions.map(\.fileName)
         tabBar.update(titles: titles, activeIndex: sessionManager.activeSessionIndex)
         let pt = sessionManager.activeSession?.pieceTable
@@ -171,6 +281,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hexGrid.needsDisplay = true
         updateStatusBar()
         updateDataInspector()
+        window?.title = sessionManager.activeSession?.fileName ?? "Strata"
     }
 
     func updateStatusBar() {
@@ -211,6 +322,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let win = NSWindow(contentRect: rect, styleMask: mask, backing: .buffered, defer: false)
         win.title = "Strata"
         win.minSize = NSSize(width: 800, height: 600)
+        win.tabbingMode = .disallowed
         win.center()
         win.setAccessibilityIdentifier("mainWindow")
 
@@ -231,9 +343,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         splitView.addSubview(dataInspector)
         splitView.setHoldingPriority(.defaultLow, forSubviewAt: 0)
         splitView.setHoldingPriority(.defaultHigh, forSubviewAt: 1)
+        emptyStateView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(tabBar)
         contentView.addSubview(splitView)
         contentView.addSubview(statusBar)
+        contentView.addSubview(emptyStateView)
 
         NSLayoutConstraint.activate([
             tabBar.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -244,6 +358,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             splitView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             splitView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             splitView.bottomAnchor.constraint(equalTo: statusBar.topAnchor),
+            emptyStateView.topAnchor.constraint(equalTo: tabBar.bottomAnchor),
+            emptyStateView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            emptyStateView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            emptyStateView.bottomAnchor.constraint(equalTo: statusBar.topAnchor),
             statusBar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             statusBar.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             statusBar.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
@@ -268,79 +386,5 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         mainMenu.addItem(buildViewMenu())
         mainMenu.addItem(buildToolsMenu())
         NSApplication.shared.mainMenu = mainMenu
-    }
-
-    private func buildAppMenu() -> NSMenuItem {
-        let item = NSMenuItem()
-        let menu = NSMenu(title: "Strata")
-        menu.addItem(
-            withTitle: "About Strata",
-            action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
-            keyEquivalent: ""
-        )
-        menu.addItem(.separator())
-        menu.addItem(withTitle: "Quit Strata", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        item.submenu = menu
-        return item
-    }
-
-    private func buildFileMenu() -> NSMenuItem {
-        let item = NSMenuItem()
-        let menu = NSMenu(title: "File")
-        menu.addItem(withTitle: "New", action: #selector(newFileAction), keyEquivalent: "n")
-        menu.addItem(withTitle: "Open…", action: #selector(openFileAction), keyEquivalent: "o")
-        menu.addItem(.separator())
-        menu.addItem(withTitle: "Save", action: #selector(saveFileAction), keyEquivalent: "s")
-        let saveAs = menu.addItem(withTitle: "Save As…", action: #selector(saveFileAsAction), keyEquivalent: "S")
-        saveAs.keyEquivalentModifierMask = [.command, .shift]
-        menu.addItem(.separator())
-        menu.addItem(withTitle: "Close Tab", action: #selector(closeTabAction), keyEquivalent: "w")
-        item.submenu = menu
-        return item
-    }
-
-    private func buildEditMenu() -> NSMenuItem {
-        let item = NSMenuItem()
-        let menu = NSMenu(title: "Edit")
-        menu.addItem(withTitle: "Undo", action: #selector(undoAction), keyEquivalent: "z")
-        let redo = menu.addItem(withTitle: "Redo", action: #selector(redoAction), keyEquivalent: "Z")
-        redo.keyEquivalentModifierMask = [.command, .shift]
-        menu.addItem(.separator())
-        menu.addItem(withTitle: "Cut", action: #selector(cutAction), keyEquivalent: "x")
-        menu.addItem(withTitle: "Copy", action: #selector(copyAction), keyEquivalent: "c")
-        menu.addItem(withTitle: "Paste", action: #selector(pasteAction), keyEquivalent: "v")
-        menu.addItem(withTitle: "Select All", action: #selector(selectAllAction), keyEquivalent: "a")
-        menu.addItem(.separator())
-        menu.addItem(withTitle: "Find…", action: #selector(showFindAction), keyEquivalent: "f")
-        menu.addItem(withTitle: "Replace…", action: #selector(showReplaceAction), keyEquivalent: "h")
-        menu.addItem(withTitle: "Go To Offset…", action: #selector(showGoToAction), keyEquivalent: "g")
-        item.submenu = menu
-        return item
-    }
-
-    private func buildViewMenu() -> NSMenuItem {
-        let item = NSMenuItem()
-        let menu = NSMenu(title: "View")
-        menu.addItem(
-            withTitle: "Toggle Checksum Panel",
-            action: #selector(toggleChecksumPanelAction),
-            keyEquivalent: ""
-        )
-        menu.addItem(withTitle: "Toggle Insert Mode", action: #selector(toggleInsertModeAction), keyEquivalent: "")
-        item.submenu = menu
-        return item
-    }
-
-    private func buildToolsMenu() -> NSMenuItem {
-        let item = NSMenuItem()
-        let menu = NSMenu(title: "Tools")
-        menu.addItem(withTitle: "Compare Files…", action: #selector(compareToolAction), keyEquivalent: "")
-        menu.addItem(.separator())
-        menu.addItem(withTitle: "Import Intel HEX…", action: #selector(importIntelHexAction), keyEquivalent: "")
-        menu.addItem(withTitle: "Import S-Record…", action: #selector(importSRecordAction), keyEquivalent: "")
-        menu.addItem(withTitle: "Export Intel HEX…", action: #selector(exportIntelHexAction), keyEquivalent: "")
-        menu.addItem(withTitle: "Export S-Record…", action: #selector(exportSRecordAction), keyEquivalent: "")
-        item.submenu = menu
-        return item
     }
 }
