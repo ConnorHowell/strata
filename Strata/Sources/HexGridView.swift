@@ -46,11 +46,30 @@ public final class HexGridView: NSView {
     /// Whether the hex pane has focus (vs ASCII pane).
     public var activePaneIsHex: Bool = true { didSet { needsDisplay = true } }
 
+    /// The base used for displaying offsets in the offset column.
+    public var offsetBase: OffsetBase = .hex { didSet { needsDisplay = true } }
+
+    /// The number of bytes per visual group in the hex column.
+    public var bytesPerGroup: Int = 8 { didSet { needsDisplay = true } }
+
+    /// The character encoding used in the ASCII (text) pane.
+    public var textEncoding: TextEncoding = .ascii { didSet { needsDisplay = true } }
+
+    /// Numbered bookmarks (0-9) mapped to byte offsets.
+    public var bookmarks: [Int: Int] = [:] { didSet { needsDisplay = true } }
+
     /// The first visible row index.
     public var scrollOffset: Int = 0 { didSet { needsDisplay = true } }
 
     /// The cursor byte position.
-    public var cursorPosition: Int = 0 { didSet { needsDisplay = true } }
+    public var cursorPosition: Int = 0 {
+        didSet {
+            needsDisplay = true
+            if cursorPosition != oldValue {
+                delegate?.hexGridView(self, didChangeSelection: selectedRange)
+            }
+        }
+    }
 
     /// Whether the first nibble of a hex byte has been entered.
     public var pendingNibble: UInt8?

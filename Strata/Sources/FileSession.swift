@@ -123,11 +123,8 @@ public final class SessionManager {
         return sessions[activeSessionIndex]
     }
 
-    /// Creates a session manager with an initial empty session.
-    public init() {
-        let initial = FileSession()
-        sessions.append(initial)
-    }
+    /// Creates a session manager with no initial sessions.
+    public init() {}
 
     /// Opens a file and creates a new session for it.
     ///
@@ -165,7 +162,8 @@ public final class SessionManager {
         sessions.remove(at: index)
         delegate?.sessionManagerDidRemoveSession(self, at: index)
         if sessions.isEmpty {
-            newSession()
+            activeSessionIndex = 0
+            delegate?.sessionManagerDidChangeActive(self)
         } else if activeSessionIndex >= sessions.count {
             setActive(index: sessions.count - 1)
         } else {

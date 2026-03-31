@@ -35,6 +35,12 @@ extension HexGridView {
         case .redo:
             dataSource?.undoManager.redo()
             needsDisplay = true
+        case .setBookmark0, .setBookmark1, .setBookmark2, .setBookmark3, .setBookmark4,
+             .setBookmark5, .setBookmark6, .setBookmark7, .setBookmark8, .setBookmark9:
+            handleSetBookmark(action)
+        case .goToBookmark0, .goToBookmark1, .goToBookmark2, .goToBookmark3, .goToBookmark4,
+             .goToBookmark5, .goToBookmark6, .goToBookmark7, .goToBookmark8, .goToBookmark9:
+            handleGoToBookmark(action)
         default:
             break
         }
@@ -211,7 +217,42 @@ extension HexGridView {
         selectedRange = 0..<ds.totalLength
     }
 
+    /// Fills the selected range with the given byte value.
+    ///
+    /// - Parameter value: The byte to fill with.
+    public func handleFillSelection(with value: UInt8) {
+        guard let ds = dataSource, let range = selectedRange else { return }
+        let fillData = Data(repeating: value, count: range.count)
+        ds.delete(range: range)
+        ds.insert(at: range.lowerBound, bytes: fillData)
+        selectedRange = range
+        needsDisplay = true
+    }
+
     // MARK: - Private
+
+    private static let setBookmarkActions: [KeyAction] = [
+        .setBookmark0, .setBookmark1, .setBookmark2, .setBookmark3, .setBookmark4,
+        .setBookmark5, .setBookmark6, .setBookmark7, .setBookmark8, .setBookmark9,
+    ]
+
+    private static let goToBookmarkActions: [KeyAction] = [
+        .goToBookmark0, .goToBookmark1, .goToBookmark2, .goToBookmark3, .goToBookmark4,
+        .goToBookmark5, .goToBookmark6, .goToBookmark7, .goToBookmark8, .goToBookmark9,
+    ]
+
+    private func handleSetBookmark(_ action: KeyAction) {
+        guard let idx = Self.setBookmarkActions.firstIndex(of: action) else { return }
+        bookmarks[idx] = cursorPosition
+        needsDisplay = true
+    }
+
+    private func handleGoToBookmark(_ action: KeyAction) {
+        guard let idx = Self.goToBookmarkActions.firstIndex(of: action),
+              let offset = bookmarks[idx] else { return }
+        scrollToOffset(offset)
+        needsDisplay = true
+    }
 
     private func hexValue(of char: Character) -> UInt8? {
         switch char {

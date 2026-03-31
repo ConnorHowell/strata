@@ -49,12 +49,16 @@ public enum GridLayout {
         charWidth(for: font) * 9 + columnPadding * 2
     }
 
-    /// Width of the hex column for the given bytes-per-row.
-    public static func hexColumnWidth(for font: NSFont, bytesPerRow: Int) -> CGFloat {
+    /// Width of the hex column for the given bytes-per-row and grouping.
+    public static func hexColumnWidth(
+        for font: NSFont, bytesPerRow: Int, bytesPerGroup: Int = 8
+    ) -> CGFloat {
         let cw = charWidth(for: font)
         let byteWidth = cw * 3
         let groups = (bytesPerRow + bytesPerGroup - 1) / bytesPerGroup
-        return byteWidth * CGFloat(bytesPerRow) + groupSpacing * CGFloat(max(0, groups - 1)) + columnPadding * 2
+        return byteWidth * CGFloat(bytesPerRow)
+            + groupSpacing * CGFloat(max(0, groups - 1))
+            + columnPadding * 2
     }
 
     /// Width of the ASCII column.
@@ -158,7 +162,9 @@ extension HexGridView {
         let font = gridFont
         let rowH = GridLayout.rowHeight(for: font)
         let offsetW = GridLayout.offsetColumnWidth(for: font)
-        let hexW = GridLayout.hexColumnWidth(for: font, bytesPerRow: bytesPerRow)
+        let hexW = GridLayout.hexColumnWidth(
+            for: font, bytesPerRow: bytesPerRow, bytesPerGroup: bytesPerGroup
+        )
         let cw = GridLayout.charWidth(for: font)
         let dataY = GridLayout.dataOriginY()
 
@@ -193,6 +199,7 @@ extension HexGridView {
 
             let byteOffset = row * bytesPerRow
             drawSelection(in: context, row: row, y: y, rowH: rowH, offsetW: offsetW, hexW: hexW, cw: cw)
+            drawBookmarkMarker(in: context, row: row, y: y, rowH: rowH, font: font)
             drawOffsetColumn(in: context, offset: byteOffset, x: GridLayout.columnPadding, y: y, font: font)
             drawHexColumn(in: context, row: row, x: offsetW + GridLayout.columnPadding, y: y, font: font, cw: cw)
             drawASCIIColumn(
@@ -207,7 +214,7 @@ extension HexGridView {
 
     private func drawHeader(in ctx: CGContext, font: NSFont, offsetW: CGFloat, hexW: CGFloat, cw: CGFloat) {
         let y = font.ascender + 4
-        drawText("Offset(h)", in: ctx, at: CGPoint(x: GridLayout.columnPadding, y: y),
+        drawText(offsetBase.headerLabel, in: ctx, at: CGPoint(x: GridLayout.columnPadding, y: y),
                  font: font, color: StrataColors.headerText)
 
         var xPos = offsetW + GridLayout.columnPadding
@@ -215,7 +222,7 @@ extension HexGridView {
             let label = String(format: "%02X", col)
             drawText(label, in: ctx, at: CGPoint(x: xPos, y: y), font: font, color: StrataColors.headerText)
             xPos += cw * 3
-            if col > 0, (col + 1) % GridLayout.bytesPerGroup == 0, col + 1 < bytesPerRow {
+            if col > 0, (col + 1) % bytesPerGroup == 0, col + 1 < bytesPerRow {
                 xPos += GridLayout.groupSpacing
             }
         }
@@ -229,7 +236,7 @@ extension HexGridView {
     }
 
     private func drawOffsetColumn(in ctx: CGContext, offset: Int, x: CGFloat, y: CGFloat, font: NSFont) {
-        let text = String(format: "%08X", offset)
+        let text = offsetBase.format(offset)
         drawText(text, in: ctx, at: CGPoint(x: x, y: y + font.ascender + 2), font: font, color: StrataColors.offsetText)
     }
 
@@ -255,7 +262,7 @@ extension HexGridView {
             }
             drawText(hex, in: ctx, at: CGPoint(x: xPos, y: y + font.ascender + 2), font: font, color: color)
             xPos += cw * 3
-            if col > 0, (col + 1) % GridLayout.bytesPerGroup == 0, col + 1 < bytesPerRow {
+            if col > 0, (col + 1) % bytesPerGroup == 0, col + 1 < bytesPerRow {
                 xPos += GridLayout.groupSpacing
             }
         }
@@ -267,11 +274,14 @@ extension HexGridView {
         for col in 0..<bytesPerRow {
             let offset = baseOffset + col
             guard offset < ds.totalLength, let byte = ds.byte(at: offset) else { break }
-            let isPrintable = (0x20...0x7E).contains(byte)
-            let char: String = isPrintable ? String(UnicodeScalar(byte)) : "."
-            let color = isPrintable ? StrataColors.asciiText : StrataColors.asciiDot
+            let decoded = textEncoding.decode(byte)
+            let color = decoded.printable ? StrataColors.asciiText : StrataColors.asciiDot
             let xPos = x + CGFloat(col) * cw
-            drawText(char, in: ctx, at: CGPoint(x: xPos, y: y + font.ascender + 2), font: font, color: color)
+            drawText(
+                decoded.character, in: ctx,
+                at: CGPoint(x: xPos, y: y + font.ascender + 2),
+                font: font, color: color
+            )
         }
     }
 
@@ -320,6 +330,7 @@ extension HexGridView {
         let displayRow = row - scrollOffset
         let y = dataY + CGFloat(displayRow) * rowH
 
+        // Active pane cursor
         NSColor.controlAccentColor.withAlphaComponent(0.35).setFill()
         if activePaneIsHex {
             let x = offsetW + GridLayout.columnPadding + CGFloat(col) * cw * 3
@@ -327,6 +338,41 @@ extension HexGridView {
         } else {
             let x = offsetW + hexW + GridLayout.columnPadding + CGFloat(col) * cw
             ctx.fill(CGRect(x: x, y: y, width: cw, height: rowH))
+        }
+
+        // Ghost caret in inactive pane
+        NSColor.controlAccentColor.withAlphaComponent(0.12).setFill()
+        if activePaneIsHex {
+            let x = offsetW + hexW + GridLayout.columnPadding + CGFloat(col) * cw
+            ctx.fill(CGRect(x: x, y: y, width: cw, height: rowH))
+        } else {
+            let x = offsetW + GridLayout.columnPadding + CGFloat(col) * cw * 3
+            ctx.fill(CGRect(x: x, y: y, width: cw * 2, height: rowH))
+        }
+    }
+
+    private func drawBookmarkMarker(
+        in ctx: CGContext, row: Int, y: CGFloat, rowH: CGFloat, font: NSFont
+    ) {
+        let rowStart = row * bytesPerRow
+        let rowEnd = rowStart + bytesPerRow
+        for (num, offset) in bookmarks where offset >= rowStart && offset < rowEnd {
+            let markerSize: CGFloat = 10
+            let markerX: CGFloat = 2
+            let markerY = y + (rowH - markerSize) / 2
+            NSColor.systemBlue.withAlphaComponent(0.8).setFill()
+            let circle = CGRect(
+                x: markerX, y: markerY,
+                width: markerSize, height: markerSize
+            )
+            ctx.fillEllipse(in: circle)
+            let label = "\(num)"
+            drawText(
+                label, in: ctx,
+                at: CGPoint(x: markerX + 2.5, y: markerY + font.ascender - 1),
+                font: NSFont.monospacedSystemFont(ofSize: 8, weight: .bold),
+                color: .white
+            )
         }
     }
 

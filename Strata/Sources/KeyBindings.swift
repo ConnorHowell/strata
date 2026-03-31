@@ -49,6 +49,18 @@ public enum KeyAction: String, CaseIterable {
     case documentStart
     /// Move to the end of the document.
     case documentEnd
+    /// Set a numbered bookmark (0-9) at the current cursor position.
+    case setBookmark0, setBookmark1, setBookmark2, setBookmark3, setBookmark4
+    /// Set a numbered bookmark (5-9) at the current cursor position.
+    case setBookmark5, setBookmark6, setBookmark7, setBookmark8, setBookmark9
+    /// Jump to a numbered bookmark (0-9).
+    case goToBookmark0, goToBookmark1, goToBookmark2, goToBookmark3, goToBookmark4
+    /// Jump to a numbered bookmark (5-9).
+    case goToBookmark5, goToBookmark6, goToBookmark7, goToBookmark8, goToBookmark9
+    /// Fill the selected range with a byte pattern.
+    case fillSelection
+    /// Create a new tab.
+    case newFile
 }
 
 // MARK: - KeyCombination
@@ -92,6 +104,7 @@ private enum VirtualKeyCode {
     static let x: UInt16 = 0x07
     static let c: UInt16 = 0x08
     static let v: UInt16 = 0x09
+    static let n: UInt16 = 0x2D
     static let w: UInt16 = 0x0D
     static let o: UInt16 = 0x1F
     static let tab: UInt16 = 0x30
@@ -100,6 +113,17 @@ private enum VirtualKeyCode {
     static let pageUp: UInt16 = 0x74
     static let end: UInt16 = 0x77
     static let pageDown: UInt16 = 0x79
+    // Number keys 0-9
+    static let key0: UInt16 = 0x1D
+    static let key1: UInt16 = 0x12
+    static let key2: UInt16 = 0x13
+    static let key3: UInt16 = 0x14
+    static let key4: UInt16 = 0x15
+    static let key5: UInt16 = 0x17
+    static let key6: UInt16 = 0x16
+    static let key7: UInt16 = 0x1A
+    static let key8: UInt16 = 0x1C
+    static let key9: UInt16 = 0x19
 }
 
 // MARK: - KeyBindingMap
@@ -119,7 +143,25 @@ public enum KeyBindingMap {
         let cmd = NSEvent.ModifierFlags.command
         let cmdShift: NSEvent.ModifierFlags = [.command, .shift]
 
-        return [
+        let ctrlShift: NSEvent.ModifierFlags = [.control, .shift]
+        let ctrl = NSEvent.ModifierFlags.control
+        let numKeys: [UInt16] = [
+            VirtualKeyCode.key0, VirtualKeyCode.key1, VirtualKeyCode.key2,
+            VirtualKeyCode.key3, VirtualKeyCode.key4, VirtualKeyCode.key5,
+            VirtualKeyCode.key6, VirtualKeyCode.key7, VirtualKeyCode.key8,
+            VirtualKeyCode.key9,
+        ]
+        let setActions: [KeyAction] = [
+            .setBookmark0, .setBookmark1, .setBookmark2, .setBookmark3, .setBookmark4,
+            .setBookmark5, .setBookmark6, .setBookmark7, .setBookmark8, .setBookmark9,
+        ]
+        let goActions: [KeyAction] = [
+            .goToBookmark0, .goToBookmark1, .goToBookmark2, .goToBookmark3, .goToBookmark4,
+            .goToBookmark5, .goToBookmark6, .goToBookmark7, .goToBookmark8, .goToBookmark9,
+        ]
+
+        var map: [KeyCombination: KeyAction] = [
+            KeyCombination(keyCode: VirtualKeyCode.n, modifierFlags: cmd): .newFile,
             KeyCombination(keyCode: VirtualKeyCode.o, modifierFlags: cmd): .openFile,
             KeyCombination(keyCode: VirtualKeyCode.s, modifierFlags: cmd): .save,
             KeyCombination(keyCode: VirtualKeyCode.s, modifierFlags: cmdShift): .saveAs,
@@ -142,6 +184,14 @@ public enum KeyBindingMap {
             KeyCombination(keyCode: VirtualKeyCode.home, modifierFlags: cmd): .documentStart,
             KeyCombination(keyCode: VirtualKeyCode.end, modifierFlags: cmd): .documentEnd,
         ]
+
+        // Ctrl+Shift+N to set bookmark N, Ctrl+N to jump to bookmark N
+        for i in 0..<10 {
+            map[KeyCombination(keyCode: numKeys[i], modifierFlags: ctrlShift)] = setActions[i]
+            map[KeyCombination(keyCode: numKeys[i], modifierFlags: ctrl)] = goActions[i]
+        }
+
+        return map
     }
 
     /// Looks up the action for a given key event.

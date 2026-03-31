@@ -70,6 +70,8 @@ public final class DataInspector: NSView {
         "Binary", "Int8", "UInt8",
         "Int16", "UInt16", "Int32", "UInt32",
         "Int64", "UInt64", "Float", "Double",
+        "Unix Time", "DOS Time", "FILETIME",
+        "GUID", "LEB128", "ULEB128", "UTF-8",
     ]
 
     private var displayRows: [Row] = typeNames.map {
@@ -253,6 +255,47 @@ public final class DataInspector: NSView {
         displayRows[idx].value = b8.map {
             "\(Double(bitPattern: toUInt64($0)))"
         } ?? "—"
+        idx += 1
+
+        // Unix Time (4-byte)
+        displayRows[idx].value = b4.map {
+            let ts = TimeInterval(toUInt32($0))
+            let date = Date(timeIntervalSince1970: ts)
+            return Self.dateFormatter.string(from: date)
+        } ?? "—"
+        idx += 1
+
+        // DOS Date/Time (4-byte packed)
+        displayRows[idx].value = b4.map { decodeDOSDateTime($0) } ?? "—"
+        idx += 1
+
+        // Windows FILETIME (8-byte, 100ns intervals since 1601)
+        displayRows[idx].value = b8.map {
+            let ft = toUInt64($0)
+            guard ft > 0 else { return "—" }
+            let unixEpochDiff: UInt64 = 116_444_736_000_000_000
+            guard ft >= unixEpochDiff else { return "(before 1970)" }
+            let ts = TimeInterval(ft - unixEpochDiff) / 10_000_000.0
+            let date = Date(timeIntervalSince1970: ts)
+            return Self.dateFormatter.string(from: date)
+        } ?? "—"
+        idx += 1
+
+        // GUID (16 bytes)
+        let b16 = readBytes(16)
+        displayRows[idx].value = b16.map { decodeGUID($0) } ?? "—"
+        idx += 1
+
+        // LEB128 (signed, variable length up to 10 bytes)
+        displayRows[idx].value = decodeLEB128(signed: true)
+        idx += 1
+
+        // ULEB128 (unsigned, variable length up to 10 bytes)
+        displayRows[idx].value = decodeLEB128(signed: false)
+        idx += 1
+
+        // UTF-8 codepoint
+        displayRows[idx].value = decodeUTF8Codepoint()
     }
 
     private func fmtSigned(_ value: Int64, bits: Int) -> String {
@@ -306,6 +349,91 @@ public final class DataInspector: NSView {
     private func toUInt64(_ d: Data) -> UInt64 {
         let o = ordered(d)
         return (0..<8).reduce(UInt64(0)) { $0 | UInt64(o[$1]) << ($1 * 8) }
+    }
+
+    private static let dateFormatter: DateFormatter = {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        fmt.timeZone = TimeZone(identifier: "UTC")
+        return fmt
+    }()
+
+    private func decodeDOSDateTime(_ data: Data) -> String {
+        let raw = toUInt32(data)
+        let time = UInt16(raw & 0xFFFF)
+        let date = UInt16((raw >> 16) & 0xFFFF)
+        let year = Int((date >> 9) & 0x7F) + 1980
+        let month = Int((date >> 5) & 0x0F)
+        let day = Int(date & 0x1F)
+        let hour = Int((time >> 11) & 0x1F)
+        let minute = Int((time >> 5) & 0x3F)
+        let second = Int(time & 0x1F) * 2
+        return String(
+            format: "%04d-%02d-%02d %02d:%02d:%02d",
+            year, month, day, hour, minute, second
+        )
+    }
+
+    private func decodeGUID(_ data: Data) -> String {
+        guard data.count >= 16 else { return "—" }
+        let d = isBigEndian ? data : data
+        let p1 = String(format: "%02X%02X%02X%02X", d[3], d[2], d[1], d[0])
+        let p2 = String(format: "%02X%02X", d[5], d[4])
+        let p3 = String(format: "%02X%02X", d[7], d[6])
+        let p4 = String(format: "%02X%02X", d[8], d[9])
+        let p5 = (10..<16).map { String(format: "%02X", d[$0]) }.joined()
+        return "\(p1)-\(p2)-\(p3)-\(p4)-\(p5)"
+    }
+
+    private func decodeLEB128(signed: Bool) -> String {
+        guard let ds = currentSource else { return "—" }
+        var result: Int64 = 0
+        var shift = 0
+        var offset = currentOffset
+        let maxBytes = min(10, ds.totalLength - currentOffset)
+        guard maxBytes > 0 else { return "—" }
+        var lastByte: UInt8 = 0
+
+        for _ in 0..<maxBytes {
+            guard let byte = ds.byte(at: offset) else { return "—" }
+            lastByte = byte
+            let payload = Int64(byte & 0x7F)
+            result |= payload << shift
+            shift += 7
+            offset += 1
+            if byte & 0x80 == 0 { break }
+        }
+
+        if signed && shift < 64 && (lastByte & 0x40) != 0 {
+            result |= -(Int64(1) << shift)
+        }
+
+        if signed {
+            return "\(result)"
+        } else {
+            return "\(UInt64(bitPattern: result))"
+        }
+    }
+
+    private func decodeUTF8Codepoint() -> String {
+        guard let ds = currentSource,
+              currentOffset < ds.totalLength,
+              let first = ds.byte(at: currentOffset) else { return "—" }
+
+        let seqLen: Int
+        if first & 0x80 == 0 { seqLen = 1 }
+        else if first & 0xE0 == 0xC0 { seqLen = 2 }
+        else if first & 0xF0 == 0xE0 { seqLen = 3 }
+        else if first & 0xF8 == 0xF0 { seqLen = 4 }
+        else { return "(invalid)" }
+
+        guard currentOffset + seqLen <= ds.totalLength else { return "(truncated)" }
+        let bytes = ds.bytes(in: currentOffset..<(currentOffset + seqLen))
+        guard let str = String(data: bytes, encoding: .utf8),
+              let scalar = str.unicodeScalars.first else {
+            return "(invalid)"
+        }
+        return String(format: "U+%04X '%@'", scalar.value, String(scalar))
     }
 
     @objc private func endianChanged() {

@@ -74,3 +74,5 @@ StrataUITests/                # XCUITest UI tests
 - `UndoManager.groupsByEvent` must be `false` in tests with explicit `beginUndoGrouping()`/`endUndoGrouping()` for predictable undo behavior.
 - Redo requires nested `registerUndo` inside the undo handler (see `PieceTable.registerUndoRestore`).
 - `NSView.tag` is read-only — use custom properties like `tabIndex` instead.
+- **NSButton radio groups require a shared non-nil action** — `NSButton(radioButtonWithTitle:target:action:)` with `target: nil, action: nil` will NOT auto-group. Each radio group needs a shared `@objc` action method, and the handler must manually set `.on`/`.off` for all buttons in the group (e.g. `for btn in group { btn.state = btn === sender ? .on : .off }`).
+- **NSBox contentView** — do NOT replace `relBox.contentView = myView`. Instead, add subviews to the existing `relBox.contentView` with constraints. Replacing it breaks NSBox sizing.
