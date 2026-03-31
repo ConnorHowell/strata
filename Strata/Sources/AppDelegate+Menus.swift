@@ -7,12 +7,39 @@ import AppKit
 
 extension AppDelegate {
 
+    /// Shows the About panel with author credits.
+    @objc func showAboutPanel() {
+        let credits = NSMutableAttributedString()
+        let bodyAttrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 11),
+            .foregroundColor: NSColor.labelColor,
+        ]
+        credits.append(NSAttributedString(
+            string: "Created by Connor Howell\n",
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 12, weight: .medium),
+                .foregroundColor: NSColor.labelColor,
+            ]
+        ))
+        credits.append(NSAttributedString(
+            string: "\nA native macOS hex editor inspired by HxD.\n",
+            attributes: bodyAttrs
+        ))
+        credits.append(NSAttributedString(
+            string: "Licensed under the MIT License.",
+            attributes: bodyAttrs
+        ))
+        NSApp.orderFrontStandardAboutPanel(options: [
+            .credits: credits,
+        ])
+    }
+
     func buildAppMenu() -> NSMenuItem {
         let item = NSMenuItem()
         let menu = NSMenu(title: "Strata")
         menu.addItem(
             withTitle: "About Strata",
-            action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
+            action: #selector(showAboutPanel),
             keyEquivalent: ""
         )
         menu.addItem(.separator())

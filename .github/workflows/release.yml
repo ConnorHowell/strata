@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Build Release
+        run: |
+          xcodebuild -project Strata.xcodeproj \
+            -scheme Strata \
+            -configuration Release \
+            -derivedDataPath build \
+            build
+
+      - name: Package App
+        run: |
+          APP_PATH=$(find build -name "Strata.app" -type d | head -1)
+          ditto -c -k --keepParent "$APP_PATH" Strata.app.zip
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Strata.app.zip
+          generate_release_notes: true
