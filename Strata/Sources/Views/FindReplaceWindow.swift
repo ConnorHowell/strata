@@ -281,7 +281,8 @@ final class FindReplaceWindowController: NSWindowController {
 
     @objc private func okTapped() {
         guard let pattern = buildPattern() else { showNoInput(); return }
-        window?.sheetParent?.endSheet(window!, returnCode: .OK)
+        guard let win = window else { return }
+        win.sheetParent?.endSheet(win, returnCode: .OK)
         searchDelegate?.findReplacePanel(FindReplacePanel(frame: .zero), didSearchFor: pattern)
     }
 
@@ -291,12 +292,14 @@ final class FindReplaceWindowController: NSWindowController {
             mode: pattern.mode, data: pattern.data, mask: pattern.mask,
             direction: .all, caseSensitive: pattern.caseSensitive
         )
-        window?.sheetParent?.endSheet(window!, returnCode: .OK)
+        guard let win = window else { return }
+        win.sheetParent?.endSheet(win, returnCode: .OK)
         searchDelegate?.findReplacePanel(FindReplacePanel(frame: .zero), didSearchFor: allDir)
     }
 
     @objc private func cancelTapped() {
-        window?.sheetParent?.endSheet(window!, returnCode: .cancel)
+        guard let win = window else { return }
+        win.sheetParent?.endSheet(win, returnCode: .cancel)
     }
 
     @objc private func directionTapped(_ sender: NSButton) {

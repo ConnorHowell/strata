@@ -15,7 +15,7 @@ final class ChecksumEngineTests: XCTestCase {
 
     func testCRC16KnownVector() {
         // CRC-16/ARC of "123456789" = 0xBB3D
-        let data = "123456789".data(using: .ascii)!
+        let data = Data("123456789".utf8)
         let result = ChecksumEngine.compute(.crc16, data: data)
         XCTAssertEqual(result, "bb3d")
     }
@@ -29,7 +29,7 @@ final class ChecksumEngineTests: XCTestCase {
 
     func testCRC32KnownVector() {
         // CRC-32 of "123456789" = 0xCBF43926
-        let data = "123456789".data(using: .ascii)!
+        let data = Data("123456789".utf8)
         let result = ChecksumEngine.compute(.crc32, data: data)
         XCTAssertEqual(result, "cbf43926")
     }
@@ -49,13 +49,13 @@ final class ChecksumEngineTests: XCTestCase {
     }
 
     func testMD5HelloWorld() {
-        let data = "Hello, World!".data(using: .utf8)!
+        let data = Data("Hello, World!".utf8)
         let result = ChecksumEngine.compute(.md5, data: data)
         XCTAssertEqual(result, "65a8e27d8879283831b664bd8b7f0ad4")
     }
 
     func testMD5KnownVector() {
-        let data = "abc".data(using: .ascii)!
+        let data = Data("abc".utf8)
         let result = ChecksumEngine.compute(.md5, data: data)
         XCTAssertEqual(result, "900150983cd24fb0d6963f7d28e17f72")
     }
@@ -68,7 +68,7 @@ final class ChecksumEngineTests: XCTestCase {
     }
 
     func testSHA1KnownVector() {
-        let data = "abc".data(using: .ascii)!
+        let data = Data("abc".utf8)
         let result = ChecksumEngine.compute(.sha1, data: data)
         XCTAssertEqual(result, "a9993e364706816aba3e25717850c26c9cd0d89d")
     }
@@ -81,7 +81,7 @@ final class ChecksumEngineTests: XCTestCase {
     }
 
     func testSHA256KnownVector() {
-        let data = "abc".data(using: .ascii)!
+        let data = Data("abc".utf8)
         let result = ChecksumEngine.compute(.sha256, data: data)
         XCTAssertEqual(result, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
     }
@@ -89,7 +89,7 @@ final class ChecksumEngineTests: XCTestCase {
     // MARK: - Compute All Tests
 
     func testComputeAll() {
-        let data = "test".data(using: .ascii)!
+        let data = Data("test".utf8)
         let results = ChecksumEngine.computeAll(data: data)
         XCTAssertEqual(results.count, ChecksumType.allCases.count)
         for type in ChecksumType.allCases {

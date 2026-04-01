@@ -4,6 +4,8 @@
 import XCTest
 @testable import Strata
 
+// MARK: - Linear Search and toLower Tests
+
 final class SearchEngineTests: XCTestCase {
 
     // MARK: - toLower
@@ -34,10 +36,10 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0x02, 0x03]),
             mask: nil, direction: .forward
         )
-        let result = SearchEngine.linearSearch(
-            in: table, length: 4, pattern: pattern, from: 0
+        XCTAssertEqual(
+            SearchEngine.linearSearch(in: table, length: 4, pattern: pattern, from: 0),
+            1
         )
-        XCTAssertEqual(result, 1)
     }
 
     func testLinearSearchAtStart() {
@@ -81,7 +83,6 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0xAA, 0xBB]),
             mask: nil, direction: .forward
         )
-        // First match at 0, starting from 1 should find match at 2
         XCTAssertEqual(
             SearchEngine.linearSearch(in: table, length: 4, pattern: pattern, from: 1),
             2
@@ -94,7 +95,6 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0xAA]),
             mask: nil, direction: .forward
         )
-        // Starting past the only match should return nil (no wrap)
         XCTAssertNil(
             SearchEngine.linearSearch(in: table, length: 3, pattern: pattern, from: 1)
         )
@@ -125,7 +125,6 @@ final class SearchEngineTests: XCTestCase {
     // MARK: - Linear Search: Case Insensitive
 
     func testLinearSearchCaseInsensitiveUpperInFile() {
-        // File has "WVW", search for "WVW" case-insensitive
         let table = PieceTable(data: Data([0x57, 0x56, 0x57])) // WVW
         let pattern = SearchPattern(
             mode: .textString, data: Data([0x57, 0x56, 0x57]),
@@ -138,7 +137,6 @@ final class SearchEngineTests: XCTestCase {
     }
 
     func testLinearSearchCaseInsensitiveLowerInPattern() {
-        // File has "WVW", search for "wvw" case-insensitive
         let table = PieceTable(data: Data([0x57, 0x56, 0x57])) // WVW
         let pattern = SearchPattern(
             mode: .textString, data: Data([0x77, 0x76, 0x77]),
@@ -151,7 +149,6 @@ final class SearchEngineTests: XCTestCase {
     }
 
     func testLinearSearchCaseInsensitiveMixedCase() {
-        // File has "Hello", search for "hELLO" case-insensitive
         let hello = Data("Hello".utf8)
         let table = PieceTable(data: hello)
         let pattern = SearchPattern(
@@ -167,7 +164,6 @@ final class SearchEngineTests: XCTestCase {
     }
 
     func testLinearSearchCaseSensitiveRejectsMismatch() {
-        // File has "WVW", search for "wvw" case-sensitive — should NOT match
         let table = PieceTable(data: Data([0x57, 0x56, 0x57])) // WVW
         let pattern = SearchPattern(
             mode: .textString, data: Data([0x77, 0x76, 0x77]),
@@ -179,7 +175,6 @@ final class SearchEngineTests: XCTestCase {
     }
 
     func testLinearSearchCaseInsensitiveNonAlpha() {
-        // Non-alpha bytes must still match exactly in case-insensitive mode
         let table = PieceTable(data: Data([0x01, 0x20, 0xFF]))
         let pattern = SearchPattern(
             mode: .hexValues, data: Data([0x01, 0x20, 0xFF]),
@@ -195,7 +190,6 @@ final class SearchEngineTests: XCTestCase {
 
     func testLinearSearchWithMask() {
         let table = PieceTable(data: Data([0xAA, 0xBB, 0xCC]))
-        // Match any byte, then 0xBB, then any byte
         let pattern = SearchPattern(
             mode: .hexValues,
             data: Data([0x00, 0xBB, 0x00]),
@@ -220,6 +214,11 @@ final class SearchEngineTests: XCTestCase {
             SearchEngine.linearSearch(in: table, length: 3, pattern: pattern, from: 0)
         )
     }
+}
+
+// MARK: - Wrapping Search, Counting, and Pattern Parsing Tests
+
+final class SearchEngineWrappingTests: XCTestCase {
 
     // MARK: - Wrapping Search
 
@@ -229,11 +228,8 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0x01]),
             mask: nil, direction: .forward
         )
-        // Starting from 1, wrapping forward should find 0x01 at position 3
         XCTAssertEqual(
-            SearchEngine.wrappingSearch(
-                in: table, length: 4, pattern: pattern, from: 1
-            ),
+            SearchEngine.wrappingSearch(in: table, length: 4, pattern: pattern, from: 1),
             3
         )
     }
@@ -244,11 +240,8 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0xAA]),
             mask: nil, direction: .forward
         )
-        // Starting from 1, wrapping should find 0xAA at position 0
         XCTAssertEqual(
-            SearchEngine.wrappingSearch(
-                in: table, length: 3, pattern: pattern, from: 1
-            ),
+            SearchEngine.wrappingSearch(in: table, length: 3, pattern: pattern, from: 1),
             0
         )
     }
@@ -259,11 +252,8 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0xAA]),
             mask: nil, direction: .backward
         )
-        // Starting from 2, backward should find 0xAA at position 0
         XCTAssertEqual(
-            SearchEngine.wrappingSearch(
-                in: table, length: 4, pattern: pattern, from: 2
-            ),
+            SearchEngine.wrappingSearch(in: table, length: 4, pattern: pattern, from: 2),
             0
         )
     }
@@ -274,11 +264,8 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0xAA]),
             mask: nil, direction: .backward
         )
-        // Starting from 0, backward wraps to find 0xAA at position 2
         XCTAssertEqual(
-            SearchEngine.wrappingSearch(
-                in: table, length: 3, pattern: pattern, from: 0
-            ),
+            SearchEngine.wrappingSearch(in: table, length: 3, pattern: pattern, from: 0),
             2
         )
     }
@@ -290,9 +277,7 @@ final class SearchEngineTests: XCTestCase {
             mask: nil, direction: .forward, caseSensitive: false
         )
         XCTAssertEqual(
-            SearchEngine.wrappingSearch(
-                in: table, length: 4, pattern: pattern, from: 0
-            ),
+            SearchEngine.wrappingSearch(in: table, length: 4, pattern: pattern, from: 0),
             1
         )
     }
@@ -305,10 +290,7 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0x02]),
             mask: nil, direction: .forward
         )
-        XCTAssertEqual(
-            SearchEngine.countMatches(in: table, length: 3, pattern: pattern),
-            1
-        )
+        XCTAssertEqual(SearchEngine.countMatches(in: table, length: 3, pattern: pattern), 1)
     }
 
     func testCountMatchesMultiple() {
@@ -317,10 +299,7 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0xAA]),
             mask: nil, direction: .forward
         )
-        XCTAssertEqual(
-            SearchEngine.countMatches(in: table, length: 5, pattern: pattern),
-            3
-        )
+        XCTAssertEqual(SearchEngine.countMatches(in: table, length: 5, pattern: pattern), 3)
     }
 
     func testCountMatchesZero() {
@@ -329,36 +308,26 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0xFF]),
             mask: nil, direction: .forward
         )
-        XCTAssertEqual(
-            SearchEngine.countMatches(in: table, length: 3, pattern: pattern),
-            0
-        )
+        XCTAssertEqual(SearchEngine.countMatches(in: table, length: 3, pattern: pattern), 0)
     }
 
     func testCountMatchesCaseInsensitive() {
-        // "AbAbAb" contains "ab" 3 times case-insensitively
         let table = PieceTable(data: Data([0x41, 0x62, 0x41, 0x62, 0x41, 0x62]))
         let pattern = SearchPattern(
-            mode: .textString, data: Data([0x61, 0x62]), // "ab"
+            mode: .textString, data: Data([0x61, 0x62]),
             mask: nil, direction: .forward, caseSensitive: false
         )
-        XCTAssertEqual(
-            SearchEngine.countMatches(in: table, length: 6, pattern: pattern),
-            3
-        )
+        XCTAssertEqual(SearchEngine.countMatches(in: table, length: 6, pattern: pattern), 3)
     }
 
     func testCountMatchesRespectsMaxCount() {
-        // 256 0xAA bytes, but cap at 100
         let table = PieceTable(data: Data(repeating: 0xAA, count: 256))
         let pattern = SearchPattern(
             mode: .hexValues, data: Data([0xAA]),
             mask: nil, direction: .forward
         )
         XCTAssertEqual(
-            SearchEngine.countMatches(
-                in: table, length: 256, pattern: pattern, maxCount: 100
-            ),
+            SearchEngine.countMatches(in: table, length: 256, pattern: pattern, maxCount: 100),
             100
         )
     }
@@ -369,10 +338,7 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data(),
             mask: nil, direction: .forward
         )
-        XCTAssertEqual(
-            SearchEngine.countMatches(in: table, length: 1, pattern: pattern),
-            0
-        )
+        XCTAssertEqual(SearchEngine.countMatches(in: table, length: 1, pattern: pattern), 0)
     }
 
     // MARK: - Match Index
@@ -383,10 +349,7 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0xAA]),
             mask: nil, direction: .forward
         )
-        XCTAssertEqual(
-            SearchEngine.matchIndex(in: table, length: 3, pattern: pattern, at: 0),
-            1
-        )
+        XCTAssertEqual(SearchEngine.matchIndex(in: table, length: 3, pattern: pattern, at: 0), 1)
     }
 
     func testMatchIndexSecond() {
@@ -395,10 +358,7 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0xAA]),
             mask: nil, direction: .forward
         )
-        XCTAssertEqual(
-            SearchEngine.matchIndex(in: table, length: 3, pattern: pattern, at: 2),
-            2
-        )
+        XCTAssertEqual(SearchEngine.matchIndex(in: table, length: 3, pattern: pattern, at: 2), 2)
     }
 
     func testMatchIndexNoMatchAtPos() {
@@ -407,23 +367,17 @@ final class SearchEngineTests: XCTestCase {
             mode: .hexValues, data: Data([0xAA]),
             mask: nil, direction: .forward
         )
-        // Position 1 has no match, so index counts only the match at 0
-        XCTAssertEqual(
-            SearchEngine.matchIndex(in: table, length: 3, pattern: pattern, at: 1),
-            1
-        )
+        XCTAssertEqual(SearchEngine.matchIndex(in: table, length: 3, pattern: pattern, at: 1), 1)
     }
 
     // MARK: - Hex Pattern Parsing
 
     func testParseHexPatternSimple() {
-        let data = FindReplacePanel.parseHexPattern("FF 00 AB")
-        XCTAssertEqual(data, Data([0xFF, 0x00, 0xAB]))
+        XCTAssertEqual(FindReplacePanel.parseHexPattern("FF 00 AB"), Data([0xFF, 0x00, 0xAB]))
     }
 
     func testParseHexPatternNoSpaces() {
-        let data = FindReplacePanel.parseHexPattern("FF00AB")
-        XCTAssertEqual(data, Data([0xFF, 0x00, 0xAB]))
+        XCTAssertEqual(FindReplacePanel.parseHexPattern("FF00AB"), Data([0xFF, 0x00, 0xAB]))
     }
 
     func testParseHexPatternInvalid() {
@@ -436,14 +390,12 @@ final class SearchEngineTests: XCTestCase {
 
     func testParseWildcardPattern() {
         let result = FindReplacePanel.parseWildcardPattern("FF ?? AB")
-        XCTAssertNotNil(result)
         XCTAssertEqual(result?.data, Data([0xFF, 0x00, 0xAB]))
         XCTAssertEqual(result?.mask, Data([0xFF, 0x00, 0xFF]))
     }
 
     func testParseWildcardPatternAllWild() {
         let result = FindReplacePanel.parseWildcardPattern("?? ??")
-        XCTAssertNotNil(result)
         XCTAssertEqual(result?.data, Data([0x00, 0x00]))
         XCTAssertEqual(result?.mask, Data([0x00, 0x00]))
     }

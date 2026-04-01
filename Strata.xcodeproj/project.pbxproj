@@ -37,6 +37,7 @@
 		AA000028 /* MinimapRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000029; };
 		AA000029 /* FindBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000030; };
 		AA000031 /* SearchEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031; };
+		AA000032 /* AppDelegate+Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000032; };
 		AA100001 /* PieceTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000001; };
 		AA100002 /* DiffEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000002; };
 		AA100003 /* ChecksumEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000003; };
@@ -95,6 +96,7 @@
 		AB000029 /* MinimapRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimapRenderer.swift; sourceTree = "<group>"; };
 		AB000030 /* FindBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindBar.swift; sourceTree = "<group>"; };
 		AB000031 /* SearchEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchEngine.swift; sourceTree = "<group>"; };
+		AB000032 /* AppDelegate+Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Search.swift"; sourceTree = "<group>"; };
 		AC000001 /* PieceTableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieceTableTests.swift; sourceTree = "<group>"; };
 		AC000002 /* DiffEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffEngineTests.swift; sourceTree = "<group>"; };
 		AC000003 /* ChecksumEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumEngineTests.swift; sourceTree = "<group>"; };
@@ -170,6 +172,7 @@
 				AB000009 /* KeyBindings.swift */,
 				AB000022 /* Encodings.swift */,
 				AB000031 /* SearchEngine.swift */,
+				AB000032 /* AppDelegate+Search.swift */,
 				C0000004 /* Formats */,
 				C0000009 /* Views */,
 			);
@@ -389,6 +392,7 @@
 				AA000028 /* MinimapRenderer.swift in Sources */,
 				AA000029 /* FindBar.swift in Sources */,
 				AA000031 /* SearchEngine.swift in Sources */,
+				AA000032 /* AppDelegate+Search.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
