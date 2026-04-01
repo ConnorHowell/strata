@@ -41,6 +41,20 @@ public struct SearchPattern {
     public let mask: Data?
     /// The direction to search.
     public let direction: SearchDirection
+    /// Whether the search is case sensitive (only relevant for text mode).
+    public let caseSensitive: Bool
+
+    /// Creates a search pattern with default case sensitivity (true).
+    public init(
+        mode: SearchMode, data: Data, mask: Data?,
+        direction: SearchDirection, caseSensitive: Bool = true
+    ) {
+        self.mode = mode
+        self.data = data
+        self.mask = mask
+        self.direction = direction
+        self.caseSensitive = caseSensitive
+    }
 }
 
 // MARK: - FindReplacePanelDelegate

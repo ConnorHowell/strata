@@ -288,7 +288,8 @@ final class FindReplaceWindowController: NSWindowController {
     @objc private func searchAllTapped() {
         guard let pattern = buildPattern() else { showNoInput(); return }
         let allDir = SearchPattern(
-            mode: pattern.mode, data: pattern.data, mask: pattern.mask, direction: .all
+            mode: pattern.mode, data: pattern.data, mask: pattern.mask,
+            direction: .all, caseSensitive: pattern.caseSensitive
         )
         window?.sheetParent?.endSheet(window!, returnCode: .OK)
         searchDelegate?.findReplacePanel(FindReplacePanel(frame: .zero), didSearchFor: allDir)
@@ -331,6 +332,7 @@ final class FindReplaceWindowController: NSWindowController {
     private func buildTextPattern() -> SearchPattern? {
         let text = textSearchField.stringValue
         guard !text.isEmpty else { return nil }
+        let isCaseSensitive = textCaseSensitive.state == .on
         let encoding: String.Encoding
         switch textEncodingPopup.indexOfSelectedItem {
         case 0: encoding = .ascii
@@ -340,7 +342,10 @@ final class FindReplaceWindowController: NSWindowController {
         default: encoding = .utf8
         }
         guard let data = text.data(using: encoding) else { return nil }
-        return SearchPattern(mode: .textString, data: data, mask: nil, direction: selectedDirection())
+        return SearchPattern(
+            mode: .textString, data: data, mask: nil,
+            direction: selectedDirection(), caseSensitive: isCaseSensitive
+        )
     }
 
     private func buildHexPattern() -> SearchPattern? {

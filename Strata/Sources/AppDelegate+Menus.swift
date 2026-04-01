@@ -126,8 +126,25 @@ extension AppDelegate {
         )
         menu.addItem(.separator())
         menu.addItem(withTitle: "Find…", action: #selector(showFindAction), keyEquivalent: "f")
+        let findNext = menu.addItem(
+            withTitle: "Find Next",
+            action: #selector(findNextAction),
+            keyEquivalent: "g"
+        )
+        findNext.keyEquivalentModifierMask = [.command]
+        let findPrev = menu.addItem(
+            withTitle: "Find Previous",
+            action: #selector(findPreviousAction),
+            keyEquivalent: "G"
+        )
+        findPrev.keyEquivalentModifierMask = [.command, .shift]
         menu.addItem(withTitle: "Replace…", action: #selector(showReplaceAction), keyEquivalent: "h")
-        menu.addItem(withTitle: "Go To Offset…", action: #selector(showGoToAction), keyEquivalent: "g")
+        let goTo = menu.addItem(
+            withTitle: "Go To Offset…",
+            action: #selector(showGoToAction),
+            keyEquivalent: "g"
+        )
+        goTo.keyEquivalentModifierMask = [.command, .option]
         item.submenu = menu
         return item
     }
@@ -143,6 +160,11 @@ extension AppDelegate {
         menu.addItem(
             withTitle: "Toggle Insert Mode",
             action: #selector(toggleInsertModeAction),
+            keyEquivalent: ""
+        )
+        menu.addItem(
+            withTitle: "Toggle Minimap",
+            action: #selector(toggleMinimapAction),
             keyEquivalent: ""
         )
         menu.addItem(.separator())

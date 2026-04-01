@@ -59,6 +59,29 @@ extension AppDelegate {
         findPanel.showReplaceDialog(relativeTo: win)
     }
 
+    func showFindBar() {
+        guard findBar.isHidden else { return }
+        findBar.isHidden = false
+        splitViewTopConstraint?.isActive = false
+        splitViewTopConstraint = splitView.topAnchor.constraint(
+            equalTo: findBar.bottomAnchor
+        )
+        splitViewTopConstraint?.isActive = true
+        window?.contentView?.layoutSubtreeIfNeeded()
+    }
+
+    func hideFindBar() {
+        guard !findBar.isHidden else { return }
+        findBar.isHidden = true
+        splitViewTopConstraint?.isActive = false
+        splitViewTopConstraint = splitView.topAnchor.constraint(
+            equalTo: tabBar.bottomAnchor
+        )
+        splitViewTopConstraint?.isActive = true
+        window?.contentView?.layoutSubtreeIfNeeded()
+        window?.makeFirstResponder(hexGrid)
+    }
+
     @objc func showSelectBlockAction() {
         let sheet = SelectBlockSheet()
         sheet.blockDelegate = self
@@ -83,6 +106,17 @@ extension AppDelegate {
 
     @objc func toggleChecksumPanelAction() { isChecksumPanelVisible.toggle() }
     @objc func toggleInsertModeAction() { hexGrid.isInsertMode.toggle(); updateStatusBar() }
+
+    @objc func toggleMinimapAction() {
+        isMinimapVisible.toggle()
+        minimapView.isHidden = !isMinimapVisible
+        if isMinimapVisible {
+            let w = splitView.bounds.width
+            splitView.setPosition(w - 220 - 80, ofDividerAt: 0)
+            splitView.setPosition(w - 220, ofDividerAt: 1)
+        }
+        splitView.adjustSubviews()
+    }
     @objc func compareToolAction() {
         guard let session = sessionManager.activeSession else { return }
         let panel = NSOpenPanel()
@@ -389,6 +423,44 @@ extension AppDelegate: TabBarDelegate {
 
 extension AppDelegate: FindReplacePanelDelegate {
     func findReplacePanel(_ panel: FindReplacePanel, didSearchFor pattern: SearchPattern) {
+        lastSearchPattern = pattern
+        searchMatchTotal = {
+            guard let ds = hexGrid.dataSource else { return 0 }
+            return SearchEngine.countMatches(
+                in: ds, length: ds.totalLength, pattern: pattern
+            )
+        }()
+        showFindBar()
+        performSearch(pattern: pattern)
+    }
+
+    @objc func findNextAction() {
+        guard let pattern = lastSearchPattern else {
+            showFindBar()
+            return
+        }
+        let fwd = SearchPattern(
+            mode: pattern.mode, data: pattern.data,
+            mask: pattern.mask, direction: .forward,
+            caseSensitive: pattern.caseSensitive
+        )
+        performSearch(pattern: fwd)
+    }
+
+    @objc func findPreviousAction() {
+        guard let pattern = lastSearchPattern else {
+            showFindBar()
+            return
+        }
+        let bwd = SearchPattern(
+            mode: pattern.mode, data: pattern.data,
+            mask: pattern.mask, direction: .backward,
+            caseSensitive: pattern.caseSensitive
+        )
+        performSearch(pattern: bwd)
+    }
+
+    private func performSearch(pattern: SearchPattern) {
         guard let ds = hexGrid.dataSource else { return }
         let len = ds.totalLength
         guard len > 0, !pattern.data.isEmpty else { return }
@@ -403,7 +475,9 @@ extension AppDelegate: FindReplacePanelDelegate {
             start = 0
         }
 
-        let found = searchBytes(in: ds, length: len, pattern: pattern, from: start)
+        let found = SearchEngine.wrappingSearch(
+            in: ds, length: len, pattern: pattern, from: start
+        )
         if let pos = found {
             hexGrid.selectedRange = pos..<(pos + patLen)
             hexGrid.cursorPosition = pos
@@ -411,8 +485,44 @@ extension AppDelegate: FindReplacePanelDelegate {
             hexGrid.needsDisplay = true
             updateStatusBar()
             updateDataInspector()
+            if !findBar.isHidden {
+                searchMatchIndex = SearchEngine.matchIndex(
+                    in: ds, length: len, pattern: pattern, at: pos
+                )
+                let term = searchTermDescription(pattern)
+                findBar.update(
+                    term: term,
+                    current: searchMatchIndex,
+                    total: searchMatchTotal
+                )
+            }
         } else {
-            showNotFoundAlert()
+            if findBar.isHidden {
+                showNotFoundAlert()
+            } else {
+                searchMatchIndex = 0
+                searchMatchTotal = 0
+                findBar.update(
+                    term: searchTermDescription(pattern),
+                    current: 0,
+                    total: 0
+                )
+            }
+        }
+    }
+
+    private func searchTermDescription(_ pattern: SearchPattern) -> String {
+        switch pattern.mode {
+        case .textString:
+            return String(data: pattern.data, encoding: .utf8) ?? "?"
+        case .hexValues:
+            let hex = pattern.data.map { String(format: "%02X", $0) }
+            let joined = hex.prefix(6).joined(separator: " ")
+            return hex.count > 6 ? joined + "..." : joined
+        case .integerNumber:
+            return "int"
+        case .floatingPoint:
+            return "float"
         }
     }
 
@@ -431,7 +541,9 @@ extension AppDelegate: FindReplacePanelDelegate {
         var count = 0
         var offset = 0
         while offset <= ds.totalLength - search.data.count {
-            if let pos = searchBytes(in: ds, length: ds.totalLength, pattern: search, from: offset) {
+            if let pos = SearchEngine.linearSearch(
+                in: ds, length: ds.totalLength, pattern: search, from: offset
+            ) {
                 ds.delete(range: pos..<(pos + search.data.count))
                 ds.insert(at: pos, bytes: replacement)
                 offset = pos + replacement.count
@@ -447,34 +559,6 @@ extension AppDelegate: FindReplacePanelDelegate {
         alert.messageText = "\(count) replacement(s) made."
         alert.alertStyle = .informational
         alert.beginSheetModal(for: win)
-    }
-
-    private func searchBytes(
-        in ds: PieceTable, length len: Int, pattern: SearchPattern, from start: Int
-    ) -> Int? {
-        let patLen = pattern.data.count
-        guard patLen <= len else { return nil }
-        for i in 0..<len {
-            let pos: Int
-            switch pattern.direction {
-            case .backward:
-                pos = ((start - i) % len + len) % len
-            default:
-                pos = (start + i) % len
-            }
-            guard pos + patLen <= len else { continue }
-            var matched = true
-            for j in 0..<patLen {
-                guard let byte = ds.byte(at: pos + j) else { matched = false; break }
-                if let mask = pattern.mask {
-                    if byte & mask[j] != pattern.data[j] & mask[j] { matched = false; break }
-                } else if byte != pattern.data[j] {
-                    matched = false; break
-                }
-            }
-            if matched { return pos }
-        }
-        return nil
     }
 
     private func showNotFoundAlert() {
@@ -493,7 +577,11 @@ extension AppDelegate: NSSplitViewDelegate {
         constrainMinCoordinate proposedMinimumPosition: CGFloat,
         ofSubviewAt dividerIndex: Int
     ) -> CGFloat {
-        max(proposedMinimumPosition, 400)
+        if dividerIndex == 0 {
+            return max(proposedMinimumPosition, 400)
+        }
+        // Divider 1: minimap has min width 80
+        return max(proposedMinimumPosition, splitView.bounds.width - 220 - 100)
     }
 
     func splitView(
@@ -501,12 +589,15 @@ extension AppDelegate: NSSplitViewDelegate {
         constrainMaxCoordinate proposedMaximumPosition: CGFloat,
         ofSubviewAt dividerIndex: Int
     ) -> CGFloat {
-        splitView.bounds.width - 120
+        if dividerIndex == 0 {
+            return splitView.bounds.width - 220 - 60
+        }
+        return splitView.bounds.width - 120
     }
 
     func splitView(_ splitView: NSSplitView, shouldAdjustSizeOfSubview view: NSView) -> Bool {
-        // Keep inspector fixed width when window resizes
-        view !== dataInspector
+        // Keep minimap and inspector fixed width when window resizes
+        view !== dataInspector && view !== minimapView
     }
 }
 
@@ -527,5 +618,25 @@ extension AppDelegate: SelectBlockDelegate {
         hexGrid.needsDisplay = true
         updateStatusBar()
         updateDataInspector()
+    }
+}
+
+// MARK: - FindBarDelegate
+
+extension AppDelegate: FindBarDelegate {
+    func findBarDidRequestNext(_ bar: FindBar) {
+        findNextAction()
+    }
+
+    func findBarDidRequestPrevious(_ bar: FindBar) {
+        findPreviousAction()
+    }
+
+    func findBarDidDismiss(_ bar: FindBar) {
+        hideFindBar()
+        lastSearchPattern = nil
+        searchMatchIndex = 0
+        hexGrid.selectedRange = nil
+        hexGrid.needsDisplay = true
     }
 }

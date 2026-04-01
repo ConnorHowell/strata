@@ -58,8 +58,16 @@ public final class HexGridView: NSView {
     /// Numbered bookmarks (0-9) mapped to byte offsets.
     public var bookmarks: [Int: Int] = [:] { didSet { needsDisplay = true } }
 
+    /// Called when `scrollOffset` changes, for external observers (scrollbar, minimap).
+    public var onScrollOffsetChanged: ((Int) -> Void)?
+
     /// The first visible row index.
-    public var scrollOffset: Int = 0 { didSet { needsDisplay = true } }
+    public var scrollOffset: Int = 0 {
+        didSet {
+            needsDisplay = true
+            if scrollOffset != oldValue { onScrollOffsetChanged?(scrollOffset) }
+        }
+    }
 
     /// The cursor byte position.
     public var cursorPosition: Int = 0 {
@@ -214,5 +222,6 @@ public final class HexGridView: NSView {
     /// Sets the accessibility identifier for UI testing.
     public func configureAccessibility(identifier: String) {
         setAccessibilityIdentifier(identifier)
+        setAccessibilityElement(true)
     }
 }
