@@ -362,47 +362,18 @@ extension AppDelegate: StringsSheetDelegate {
         guard let session = sessionManager.activeSession else { return }
         let fileName = session.fileName
 
-        // Resolve file URL on main thread to avoid capturing session
-        // in the background closure.
-        let fileURL: URL?
-        let useFile: Bool
-        if region == .entireFile, !session.isModified {
-            fileURL = session.fileURL
-            useFile = fileURL != nil
-        } else {
-            fileURL = nil
-            useFile = false
-        }
-
-        // Resolve data on the main thread to avoid accessing UI
-        // properties (e.g. hexGrid.selectedRange) from a background thread.
-        let regionData: Data?
-        if !useFile {
-            regionData = dataForRegion(region)
-        } else {
-            regionData = nil
-        }
+        // Always use piece table data — reading from the file URL
+        // directly fails in sandboxed builds where security-scoped
+        // access has expired.
+        guard let regionData = dataForRegion(region) else { return }
 
         let progress = showProgressPanel(title: "Extracting strings\u{2026}")
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            let matches: [StringMatch]
-            if useFile, let url = fileURL {
-                matches = StringsEngine.scanFile(
-                    url: url,
-                    minLength: minLength,
-                    encodings: encodings
-                )
-            } else {
-                guard let data = regionData else {
-                    DispatchQueue.main.async { progress.close() }
-                    return
-                }
-                matches = StringsEngine.scan(
-                    data: data,
-                    minLength: minLength,
-                    encodings: encodings
-                )
-            }
+            let matches = StringsEngine.scan(
+                data: regionData,
+                minLength: minLength,
+                encodings: encodings
+            )
             DispatchQueue.main.async {
                 progress.close()
                 guard let self else { return }
