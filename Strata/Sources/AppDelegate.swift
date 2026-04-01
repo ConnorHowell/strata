@@ -214,7 +214,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let hexGrid = HexGridView()
     let statusBar = StatusBarView(frame: .zero)
     let findPanel = FindReplacePanel(frame: .zero)
-    let checksumPanel = ChecksumPanel(frame: .zero)
     let dataInspector = DataInspector(frame: .zero)
     let hexScrollBar = HexScrollBar(frame: .zero)
     let minimapView = MinimapView(frame: .zero)
@@ -231,7 +230,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var searchMatchIndex: Int = 0
     /// Total matches for current search pattern.
     var searchMatchTotal: Int = 0
-    var isChecksumPanelVisible = false
     var recentFileURLs: [URL] = []
     static let maxRecentFiles = 10
     /// Retains auxiliary windows (stats, diff) so ARC doesn't deallocate them.

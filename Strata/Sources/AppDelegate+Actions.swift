@@ -104,8 +104,9 @@ extension AppDelegate {
         hostVC.presentAsSheet(sheet)
     }
 
-    @objc func toggleChecksumPanelAction() { isChecksumPanelVisible.toggle() }
-    @objc func toggleInsertModeAction() { hexGrid.isInsertMode.toggle(); updateStatusBar() }
+    @objc func toggleInsertModeAction() {
+        hexGrid.isInsertMode.toggle(); updateStatusBar()
+    }
 
     @objc func toggleMinimapAction() {
         isMinimapVisible.toggle()
@@ -116,86 +117,6 @@ extension AppDelegate {
             splitView.setPosition(w - 220, ofDividerAt: 1)
         }
         splitView.adjustSubviews()
-    }
-    @objc func compareToolAction() {
-        guard let session = sessionManager.activeSession else { return }
-        let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = false
-        panel.message = "Select a file to compare with the current document."
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        do {
-            let otherData = try Data(contentsOf: url, options: .mappedIfSafe)
-            let currentLen = session.pieceTable.totalLength
-            let currentData = session.pieceTable.bytes(in: 0..<currentLen)
-            let diffView = DiffView(
-                frame: NSRect(x: 0, y: 0, width: 900, height: 600)
-            )
-            diffView.setFileNames(
-                left: session.fileName,
-                right: url.lastPathComponent
-            )
-            diffView.compare(left: currentData, right: otherData)
-
-            let diffWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 900, height: 600),
-                styleMask: [.titled, .closable, .resizable],
-                backing: .buffered,
-                defer: false
-            )
-            diffWindow.isReleasedWhenClosed = false
-            diffWindow.title = "Compare: \(session.fileName) ↔ \(url.lastPathComponent)"
-            diffWindow.contentView = diffView
-            diffWindow.center()
-            diffWindow.makeKeyAndOrderFront(nil)
-            retainAuxiliaryWindow(diffWindow)
-        } catch {
-            showError(error)
-        }
-    }
-
-    @objc func importIntelHexAction() {
-        let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.data]
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        do {
-            let content = try String(contentsOf: url, encoding: .utf8)
-            let records = try IntelHex.parse(content)
-            let data = IntelHex.toData(records)
-            let session = sessionManager.newSession()
-            session.pieceTable.insert(at: 0, bytes: data)
-            refreshUI()
-        } catch { showError(error) }
-    }
-
-    @objc func importSRecordAction() {
-        let panel = NSOpenPanel()
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        do {
-            let content = try String(contentsOf: url, encoding: .utf8)
-            let records = try SRecord.parse(content)
-            let data = SRecord.toData(records)
-            let session = sessionManager.newSession()
-            session.pieceTable.insert(at: 0, bytes: data)
-            refreshUI()
-        } catch { showError(error) }
-    }
-
-    @objc func exportIntelHexAction() {
-        guard let session = sessionManager.activeSession else { return }
-        let panel = NSSavePanel()
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        let data = session.pieceTable.bytes(in: 0..<session.pieceTable.totalLength)
-        let hex = IntelHex.fromData(data)
-        do { try hex.write(to: url, atomically: true, encoding: .utf8) } catch { showError(error) }
-    }
-
-    @objc func exportSRecordAction() {
-        guard let session = sessionManager.activeSession else { return }
-        let panel = NSSavePanel()
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        let data = session.pieceTable.bytes(in: 0..<session.pieceTable.totalLength)
-        let srec = SRecord.fromData(data)
-        do { try srec.write(to: url, atomically: true, encoding: .utf8) } catch { showError(error) }
     }
 
     @objc func setOffsetBase(_ sender: NSMenuItem) {
@@ -241,97 +162,6 @@ extension AppDelegate {
             guard let byte = UInt8(text, radix: 16) else { return }
             self?.hexGrid.handleFillSelection(with: byte)
             self?.updateStatusBar()
-        }
-    }
-
-    @objc func byteStatisticsAction() {
-        guard let session = sessionManager.activeSession else { return }
-        let len = session.pieceTable.totalLength
-        guard len > 0 else { return }
-        let data = session.pieceTable.bytes(in: 0..<len)
-        let panel = ByteStatisticsPanel(data: data)
-        let statsWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 420),
-            styleMask: [.titled, .closable, .resizable],
-            backing: .buffered,
-            defer: false
-        )
-        statsWindow.isReleasedWhenClosed = false
-        statsWindow.title = "Byte Statistics — \(session.fileName)"
-        statsWindow.contentView = panel
-        statsWindow.center()
-        statsWindow.makeKeyAndOrderFront(nil)
-        retainAuxiliaryWindow(statsWindow)
-    }
-
-    @objc func concatenateFilesAction() {
-        let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = true
-        panel.message = "Select files to concatenate (in order)."
-        guard panel.runModal() == .OK, !panel.urls.isEmpty else { return }
-        var combined = Data()
-        for url in panel.urls {
-            do {
-                let data = try Data(contentsOf: url, options: .mappedIfSafe)
-                combined.append(data)
-            } catch {
-                showError(error)
-                return
-            }
-        }
-        let session = sessionManager.newSession()
-        session.pieceTable.insert(at: 0, bytes: combined)
-        refreshUI()
-    }
-
-    @objc func splitFileAction() {
-        guard let session = sessionManager.activeSession else { return }
-        let len = session.pieceTable.totalLength
-        guard len > 0, let win = window else { return }
-        let alert = NSAlert()
-        alert.messageText = "Split File"
-        alert.informativeText = "Enter chunk size in bytes (decimal):"
-        alert.addButton(withTitle: "Split")
-        alert.addButton(withTitle: "Cancel")
-        let input = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 24))
-        input.placeholderString = "1024"
-        alert.accessoryView = input
-        alert.beginSheetModal(for: win) { [weak self] response in
-            guard response == .alertFirstButtonReturn else { return }
-            guard let self,
-                  let chunkSize = Int(input.stringValue),
-                  chunkSize > 0 else { return }
-            let dirPanel = NSOpenPanel()
-            dirPanel.canChooseDirectories = true
-            dirPanel.canChooseFiles = false
-            dirPanel.canCreateDirectories = true
-            dirPanel.message = "Choose output directory for split files."
-            guard dirPanel.runModal() == .OK, let dir = dirPanel.url else { return }
-            let data = session.pieceTable.bytes(in: 0..<len)
-            var partNum = 0
-            var offset = 0
-            while offset < data.count {
-                let end = min(offset + chunkSize, data.count)
-                let chunk = data[offset..<end]
-                let name = String(
-                    format: "%@.%03d",
-                    session.fileName, partNum
-                )
-                let fileURL = dir.appendingPathComponent(name)
-                do {
-                    try Data(chunk).write(to: fileURL, options: .atomic)
-                } catch {
-                    self.showError(error)
-                    return
-                }
-                partNum += 1
-                offset = end
-            }
-            let done = NSAlert()
-            done.messageText = "Split complete."
-            done.informativeText = "\(partNum) files created."
-            done.alertStyle = .informational
-            done.beginSheetModal(for: win)
         }
     }
 
@@ -430,7 +260,6 @@ extension AppDelegate: NSSplitViewDelegate {
         if dividerIndex == 0 {
             return max(proposedMinimumPosition, 400)
         }
-        // Divider 1: minimap has min width 80
         return max(proposedMinimumPosition, splitView.bounds.width - 220 - 100)
     }
 
@@ -445,8 +274,10 @@ extension AppDelegate: NSSplitViewDelegate {
         return splitView.bounds.width - 120
     }
 
-    func splitView(_ splitView: NSSplitView, shouldAdjustSizeOfSubview view: NSView) -> Bool {
-        // Keep minimap and inspector fixed width when window resizes
+    func splitView(
+        _ splitView: NSSplitView,
+        shouldAdjustSizeOfSubview view: NSView
+    ) -> Bool {
         view !== dataInspector && view !== minimapView
     }
 }
@@ -470,4 +301,3 @@ extension AppDelegate: SelectBlockDelegate {
         updateDataInspector()
     }
 }
-

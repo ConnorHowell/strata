@@ -106,4 +106,28 @@ final class ChecksumEngineTests: XCTestCase {
         XCTAssertEqual(result.count, 64) // SHA-256 is 64 hex chars
         XCTAssertFalse(result.isEmpty)
     }
+
+    // MARK: - Comparison Tests
+
+    func testCompareMatchingChecksum() {
+        let data = Data("abc".utf8)
+        let md5 = ChecksumEngine.compute(.md5, data: data)
+        XCTAssertEqual(md5, "900150983cd24fb0d6963f7d28e17f72")
+        // Simulating comparison: computed value matches expected
+        XCTAssertTrue(md5 == "900150983cd24fb0d6963f7d28e17f72")
+    }
+
+    func testCompareMismatchChecksum() {
+        let data = Data("abc".utf8)
+        let md5 = ChecksumEngine.compute(.md5, data: data)
+        XCTAssertFalse(md5 == "0000000000000000000000000000000000")
+    }
+
+    func testSubsetDiffersFromFull() {
+        let fullData = Data("Hello, World!".utf8)
+        let subset = fullData[0..<5]
+        let fullSHA = ChecksumEngine.compute(.sha256, data: fullData)
+        let subsetSHA = ChecksumEngine.compute(.sha256, data: Data(subset))
+        XCTAssertNotEqual(fullSHA, subsetSHA)
+    }
 }
