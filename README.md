@@ -20,6 +20,10 @@
 
 ---
 
+<p align="center">
+  <img src="screenshot.png" alt="Strata hex editor screenshot" width="800">
+</p>
+
 ## Why?
 
 I built this (heavily) with the help of [Claude Code](https://claude.ai/claude-code) because I've always wanted a macOS-native hex editor that is almost identical to [HxD](https://mh-nexus.de/en/hxd/) — because I don't like change. It also seemed like a good test for how far I could push almost entirely AI-driven development of a brand new application to serve my specific use case.
