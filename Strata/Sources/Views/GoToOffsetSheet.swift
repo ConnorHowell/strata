@@ -147,8 +147,17 @@ public final class GoToOffsetSheet: NSViewController {
             view.addSubview(sub)
         }
 
+        activateLayoutConstraints(
+            margin: margin, offsetLabel: offsetLabel,
+            baseStack: baseStack, relBox: relBox, buttonStack: buttonStack
+        )
+    }
+
+    private func activateLayoutConstraints(
+        margin: CGFloat, offsetLabel: NSView,
+        baseStack: NSView, relBox: NSView, buttonStack: NSView
+    ) {
         NSLayoutConstraint.activate([
-            // View size
             view.widthAnchor.constraint(equalToConstant: 300),
 
             offsetLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: margin),

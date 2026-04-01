@@ -21,22 +21,41 @@ final class StrataUITests: XCTestCase {
         app = nil
     }
 
+    // MARK: - Helpers
+
+    /// Creates a new file via menu so the hex grid and tab bar become visible.
+    private func createNewFile() {
+        app.menuItems["New"].click()
+    }
+
     // MARK: - Tests
 
     func testLaunchAndDisplayHexGrid() throws {
         let window = app.windows["mainWindow"]
         XCTAssertTrue(window.waitForExistence(timeout: 5), "Main window should exist")
 
+        // Hex grid is hidden until a file is open
+        createNewFile()
+
         let hexGrid = window.otherElements["hexGridView"]
-        XCTAssertTrue(hexGrid.exists, "Hex grid view should exist")
+        XCTAssertTrue(
+            hexGrid.waitForExistence(timeout: 3),
+            "Hex grid view should exist after creating a file"
+        )
     }
 
     func testTabBarExists() throws {
         let window = app.windows["mainWindow"]
         XCTAssertTrue(window.waitForExistence(timeout: 5))
 
+        // Tab bar is hidden until a file is open
+        createNewFile()
+
         let tabBar = window.otherElements["tabBar"]
-        XCTAssertTrue(tabBar.exists, "Tab bar should exist")
+        XCTAssertTrue(
+            tabBar.waitForExistence(timeout: 3),
+            "Tab bar should exist after creating a file"
+        )
     }
 
     func testStatusBarExists() throws {
@@ -100,10 +119,13 @@ final class StrataUITests: XCTestCase {
         XCTAssertTrue(window.waitForExistence(timeout: 5))
 
         // Create new file via menu
-        app.menuItems["New"].click()
+        createNewFile()
 
-        // The tab bar should update
+        // The tab bar should appear
         let tabBar = window.otherElements["tabBar"]
-        XCTAssertTrue(tabBar.exists)
+        XCTAssertTrue(
+            tabBar.waitForExistence(timeout: 3),
+            "Tab bar should exist after creating a file"
+        )
     }
 }

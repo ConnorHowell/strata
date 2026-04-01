@@ -281,21 +281,25 @@ final class FindReplaceWindowController: NSWindowController {
 
     @objc private func okTapped() {
         guard let pattern = buildPattern() else { showNoInput(); return }
-        window?.sheetParent?.endSheet(window!, returnCode: .OK)
+        guard let win = window else { return }
+        win.sheetParent?.endSheet(win, returnCode: .OK)
         searchDelegate?.findReplacePanel(FindReplacePanel(frame: .zero), didSearchFor: pattern)
     }
 
     @objc private func searchAllTapped() {
         guard let pattern = buildPattern() else { showNoInput(); return }
         let allDir = SearchPattern(
-            mode: pattern.mode, data: pattern.data, mask: pattern.mask, direction: .all
+            mode: pattern.mode, data: pattern.data, mask: pattern.mask,
+            direction: .all, caseSensitive: pattern.caseSensitive
         )
-        window?.sheetParent?.endSheet(window!, returnCode: .OK)
+        guard let win = window else { return }
+        win.sheetParent?.endSheet(win, returnCode: .OK)
         searchDelegate?.findReplacePanel(FindReplacePanel(frame: .zero), didSearchFor: allDir)
     }
 
     @objc private func cancelTapped() {
-        window?.sheetParent?.endSheet(window!, returnCode: .cancel)
+        guard let win = window else { return }
+        win.sheetParent?.endSheet(win, returnCode: .cancel)
     }
 
     @objc private func directionTapped(_ sender: NSButton) {
@@ -331,6 +335,7 @@ final class FindReplaceWindowController: NSWindowController {
     private func buildTextPattern() -> SearchPattern? {
         let text = textSearchField.stringValue
         guard !text.isEmpty else { return nil }
+        let isCaseSensitive = textCaseSensitive.state == .on
         let encoding: String.Encoding
         switch textEncodingPopup.indexOfSelectedItem {
         case 0: encoding = .ascii
@@ -340,7 +345,10 @@ final class FindReplaceWindowController: NSWindowController {
         default: encoding = .utf8
         }
         guard let data = text.data(using: encoding) else { return nil }
-        return SearchPattern(mode: .textString, data: data, mask: nil, direction: selectedDirection())
+        return SearchPattern(
+            mode: .textString, data: data, mask: nil,
+            direction: selectedDirection(), caseSensitive: isCaseSensitive
+        )
     }
 
     private func buildHexPattern() -> SearchPattern? {
@@ -353,21 +361,8 @@ final class FindReplaceWindowController: NSWindowController {
         let text = intSearchField.stringValue
         guard !text.isEmpty, let value = Int64(text) else { return nil }
         let le = intByteOrderPopup.indexOfSelectedItem == 0
-        var data = Data()
-        switch intBitWidthPopup.indexOfSelectedItem {
-        case 0:
-            var val = Int8(clamping: value)
-            data.append(contentsOf: withUnsafeBytes(of: &val) { Array($0) })
-        case 1:
-            var val = le ? Int16(clamping: value).littleEndian : Int16(clamping: value).bigEndian
-            data.append(contentsOf: withUnsafeBytes(of: &val) { Array($0) })
-        case 2:
-            var val = le ? Int32(clamping: value).littleEndian : Int32(clamping: value).bigEndian
-            data.append(contentsOf: withUnsafeBytes(of: &val) { Array($0) })
-        case 3:
-            var val = le ? value.littleEndian : value.bigEndian
-            data.append(contentsOf: withUnsafeBytes(of: &val) { Array($0) })
-        default: return nil
+        guard let data = intBytes(value: value, width: intBitWidthPopup.indexOfSelectedItem, le: le) else {
+            return nil
         }
         return SearchPattern(mode: .integerNumber, data: data, mask: nil, direction: selectedDirection())
     }
@@ -393,5 +388,25 @@ final class FindReplaceWindowController: NSWindowController {
         alert.informativeText = "Please enter a value to search for."
         alert.alertStyle = .warning
         alert.beginSheetModal(for: win)
+    }
+}
+
+// MARK: - Integer Encoding Helper
+
+private func intBytes(value: Int64, width: Int, le: Bool) -> Data? {
+    switch width {
+    case 0:
+        var val = Int8(clamping: value)
+        return Data(bytes: &val, count: 1)
+    case 1:
+        var val = le ? Int16(clamping: value).littleEndian : Int16(clamping: value).bigEndian
+        return Data(bytes: &val, count: 2)
+    case 2:
+        var val = le ? Int32(clamping: value).littleEndian : Int32(clamping: value).bigEndian
+        return Data(bytes: &val, count: 4)
+    case 3:
+        var val = le ? value.littleEndian : value.bigEndian
+        return Data(bytes: &val, count: 8)
+    default: return nil
     }
 }

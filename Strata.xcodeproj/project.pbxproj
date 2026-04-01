@@ -32,11 +32,18 @@
 		AA000022 /* ByteStatisticsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000023; };
 		AA000023 /* AppDelegate+Menus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000024; };
 		AA000024 /* SelectBlockSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000025; };
+		AA000026 /* HexScrollBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000027; };
+		AA000027 /* MinimapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000028; };
+		AA000028 /* MinimapRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000029; };
+		AA000029 /* FindBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000030; };
+		AA000031 /* SearchEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031; };
+		AA000032 /* AppDelegate+Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000032; };
 		AA100001 /* PieceTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000001; };
 		AA100002 /* DiffEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000002; };
 		AA100003 /* ChecksumEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000003; };
 		AA100004 /* IntelHexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000004; };
 		AA100005 /* SRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000005; };
+		AA100006 /* SearchEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000007; };
 		AA200001 /* StrataUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000001; };
 /* End PBXBuildFile section */
 
@@ -84,11 +91,18 @@
 		AB000024 /* AppDelegate+Menus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Menus.swift"; sourceTree = "<group>"; };
 		AB000025 /* SelectBlockSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectBlockSheet.swift; sourceTree = "<group>"; };
 		AB000026 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AB000027 /* HexScrollBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexScrollBar.swift; sourceTree = "<group>"; };
+		AB000028 /* MinimapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimapView.swift; sourceTree = "<group>"; };
+		AB000029 /* MinimapRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimapRenderer.swift; sourceTree = "<group>"; };
+		AB000030 /* FindBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindBar.swift; sourceTree = "<group>"; };
+		AB000031 /* SearchEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchEngine.swift; sourceTree = "<group>"; };
+		AB000032 /* AppDelegate+Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Search.swift"; sourceTree = "<group>"; };
 		AC000001 /* PieceTableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieceTableTests.swift; sourceTree = "<group>"; };
 		AC000002 /* DiffEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffEngineTests.swift; sourceTree = "<group>"; };
 		AC000003 /* ChecksumEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumEngineTests.swift; sourceTree = "<group>"; };
 		AC000004 /* IntelHexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelHexTests.swift; sourceTree = "<group>"; };
 		AC000005 /* SRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRecordTests.swift; sourceTree = "<group>"; };
+		AC000007 /* SearchEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchEngineTests.swift; sourceTree = "<group>"; };
 		AC000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AD000001 /* StrataUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrataUITests.swift; sourceTree = "<group>"; };
 		AD000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -157,6 +171,8 @@
 				AB000008 /* ChecksumEngine.swift */,
 				AB000009 /* KeyBindings.swift */,
 				AB000022 /* Encodings.swift */,
+				AB000031 /* SearchEngine.swift */,
+				AB000032 /* AppDelegate+Search.swift */,
 				C0000004 /* Formats */,
 				C0000009 /* Views */,
 			);
@@ -180,6 +196,7 @@
 				AC000003 /* ChecksumEngineTests.swift */,
 				AC000004 /* IntelHexTests.swift */,
 				AC000005 /* SRecordTests.swift */,
+				AC000007 /* SearchEngineTests.swift */,
 				AC000006 /* Info.plist */,
 			);
 			path = StrataTests;
@@ -225,6 +242,10 @@
 				AB000021 /* FindReplaceWindow.swift */,
 				AB000023 /* ByteStatisticsPanel.swift */,
 				AB000025 /* SelectBlockSheet.swift */,
+				AB000027 /* HexScrollBar.swift */,
+				AB000028 /* MinimapView.swift */,
+				AB000029 /* MinimapRenderer.swift */,
+				AB000030 /* FindBar.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -366,6 +387,12 @@
 				AA000022 /* ByteStatisticsPanel.swift in Sources */,
 				AA000023 /* AppDelegate+Menus.swift in Sources */,
 				AA000024 /* SelectBlockSheet.swift in Sources */,
+				AA000026 /* HexScrollBar.swift in Sources */,
+				AA000027 /* MinimapView.swift in Sources */,
+				AA000028 /* MinimapRenderer.swift in Sources */,
+				AA000029 /* FindBar.swift in Sources */,
+				AA000031 /* SearchEngine.swift in Sources */,
+				AA000032 /* AppDelegate+Search.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -378,6 +405,7 @@
 				AA100003 /* ChecksumEngineTests.swift in Sources */,
 				AA100004 /* IntelHexTests.swift in Sources */,
 				AA100005 /* SRecordTests.swift in Sources */,
+				AA100006 /* SearchEngineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

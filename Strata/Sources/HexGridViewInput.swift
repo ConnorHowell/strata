@@ -255,10 +255,11 @@ extension HexGridView {
     }
 
     private func hexValue(of char: Character) -> UInt8? {
+        guard let ascii = char.asciiValue else { return nil }
         switch char {
-        case "0"..."9": return UInt8(char.asciiValue! - Character("0").asciiValue!)
-        case "a"..."f": return UInt8(char.asciiValue! - Character("a").asciiValue!) + 10
-        case "A"..."F": return UInt8(char.asciiValue! - Character("A").asciiValue!) + 10
+        case "0"..."9": return ascii - 0x30
+        case "a"..."f": return ascii - 0x61 + 10
+        case "A"..."F": return ascii - 0x41 + 10
         default: return nil
         }
     }

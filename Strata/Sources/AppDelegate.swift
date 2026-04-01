@@ -45,6 +45,7 @@ public final class StatusBarView: NSView {
         wantsLayer = true
         layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
         setAccessibilityIdentifier("statusBar")
+        setAccessibilityElement(true)
         modeLabel.setAccessibilityIdentifier("modeIndicator")
 
         let stack = NSStackView(views: [offsetLabel, selectionLabel, modeLabel, sizeLabel])
@@ -215,8 +216,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let findPanel = FindReplacePanel(frame: .zero)
     let checksumPanel = ChecksumPanel(frame: .zero)
     let dataInspector = DataInspector(frame: .zero)
+    let hexScrollBar = HexScrollBar(frame: .zero)
+    let minimapView = MinimapView(frame: .zero)
+    let hexEditorContainer = NSView(frame: .zero)
     let splitView = NSSplitView()
     let emptyStateView = EmptyStateView(frame: .zero)
+    let findBar = FindBar(frame: .zero)
+    var isMinimapVisible = true
+    /// The last search pattern, used for Find Next / Find Previous.
+    var lastSearchPattern: SearchPattern?
+    /// Constraint pinning splitView top to findBar or tabBar.
+    var splitViewTopConstraint: NSLayoutConstraint?
+    /// Current match index (1-based).
+    var searchMatchIndex: Int = 0
+    /// Total matches for current search pattern.
+    var searchMatchTotal: Int = 0
     var isChecksumPanelVisible = false
     var recentFileURLs: [URL] = []
     static let maxRecentFiles = 10
@@ -279,6 +293,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hexGrid.scrollOffset = 0
         hexGrid.pendingNibble = nil
         hexGrid.needsDisplay = true
+        updateScrollComponents()
         updateStatusBar()
         updateDataInspector()
         window?.title = sessionManager.activeSession?.fileName ?? "Strata"
@@ -294,6 +309,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             insertMode: hexGrid.isInsertMode,
             fileSize: size
         )
+    }
+
+    func updateScrollComponents() {
+        let rows = hexGrid.totalRows
+        let visible = hexGrid.visibleRowRange.count
+        hexScrollBar.totalRows = rows
+        hexScrollBar.visibleRows = visible
+        hexScrollBar.updateFromScrollOffset(hexGrid.scrollOffset)
+        minimapView.dataSource = hexGrid.dataSource
+        minimapView.bytesPerRow = hexGrid.bytesPerRow
+        minimapView.totalRows = rows
+        minimapView.visibleRows = visible
+        minimapView.scrollOffset = hexGrid.scrollOffset
+        minimapView.invalidateCache()
     }
 
     func updateDataInspector() {
@@ -336,25 +365,73 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusBar.translatesAutoresizingMaskIntoConstraints = false
         splitView.translatesAutoresizingMaskIntoConstraints = false
 
+        // Hex editor container: hex grid + scrollbar
+        hexEditorContainer.translatesAutoresizingMaskIntoConstraints = false
+        hexGrid.translatesAutoresizingMaskIntoConstraints = false
+        hexScrollBar.translatesAutoresizingMaskIntoConstraints = false
+        hexEditorContainer.addSubview(hexGrid)
+        hexEditorContainer.addSubview(hexScrollBar)
+        let scrollerW = NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
+        NSLayoutConstraint.activate([
+            hexGrid.topAnchor.constraint(equalTo: hexEditorContainer.topAnchor),
+            hexGrid.leadingAnchor.constraint(equalTo: hexEditorContainer.leadingAnchor),
+            hexGrid.bottomAnchor.constraint(equalTo: hexEditorContainer.bottomAnchor),
+            hexGrid.trailingAnchor.constraint(equalTo: hexScrollBar.leadingAnchor),
+            hexScrollBar.topAnchor.constraint(equalTo: hexEditorContainer.topAnchor),
+            hexScrollBar.trailingAnchor.constraint(equalTo: hexEditorContainer.trailingAnchor),
+            hexScrollBar.bottomAnchor.constraint(equalTo: hexEditorContainer.bottomAnchor),
+            hexScrollBar.widthAnchor.constraint(equalToConstant: scrollerW),
+        ])
+
         splitView.isVertical = true
         splitView.dividerStyle = .thin
         splitView.delegate = self
-        splitView.addSubview(hexGrid)
+        splitView.addSubview(hexEditorContainer)
+        splitView.addSubview(minimapView)
         splitView.addSubview(dataInspector)
         splitView.setHoldingPriority(.defaultLow, forSubviewAt: 0)
         splitView.setHoldingPriority(.defaultHigh, forSubviewAt: 1)
+        splitView.setHoldingPriority(.defaultHigh, forSubviewAt: 2)
+
+        // Wire scroll synchronization
+        hexGrid.onScrollOffsetChanged = { [weak self] offset in
+            guard let self else { return }
+            self.hexScrollBar.updateFromScrollOffset(offset)
+            self.minimapView.scrollOffset = offset
+            self.minimapView.totalRows = self.hexGrid.totalRows
+            self.minimapView.visibleRows = self.hexGrid.visibleRowRange.count
+            self.hexScrollBar.totalRows = self.hexGrid.totalRows
+            self.hexScrollBar.visibleRows = self.hexGrid.visibleRowRange.count
+        }
+        hexScrollBar.onScrollOffsetChanged = { [weak self] offset in
+            self?.hexGrid.scrollOffset = offset
+        }
+        minimapView.onScrollOffsetChanged = { [weak self] offset in
+            self?.hexGrid.scrollOffset = offset
+        }
         emptyStateView.translatesAutoresizingMaskIntoConstraints = false
+        findBar.translatesAutoresizingMaskIntoConstraints = false
+        findBar.isHidden = true
+        findBar.delegate = self
         contentView.addSubview(tabBar)
+        contentView.addSubview(findBar)
         contentView.addSubview(splitView)
         contentView.addSubview(statusBar)
         contentView.addSubview(emptyStateView)
+
+        let svTop = splitView.topAnchor.constraint(equalTo: tabBar.bottomAnchor)
+        splitViewTopConstraint = svTop
 
         NSLayoutConstraint.activate([
             tabBar.topAnchor.constraint(equalTo: contentView.topAnchor),
             tabBar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             tabBar.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             tabBar.heightAnchor.constraint(equalToConstant: 30),
-            splitView.topAnchor.constraint(equalTo: tabBar.bottomAnchor),
+            findBar.topAnchor.constraint(equalTo: tabBar.bottomAnchor),
+            findBar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            findBar.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            findBar.heightAnchor.constraint(equalToConstant: 32),
+            svTop,
             splitView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             splitView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             splitView.bottomAnchor.constraint(equalTo: statusBar.topAnchor),
@@ -370,12 +447,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         win.makeKeyAndOrderFront(nil)
         window = win
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.splitView.setPosition(
-                self.splitView.bounds.width - 220, ofDividerAt: 0
-            )
-        }
+        splitView.layoutSubtreeIfNeeded()
+        let w = splitView.bounds.width
+        // Set dividers left-to-right: hex container | minimap | inspector
+        splitView.setPosition(w - 220 - 80, ofDividerAt: 0)
+        splitView.setPosition(w - 220, ofDividerAt: 1)
     }
 
     func setupMainMenu() {

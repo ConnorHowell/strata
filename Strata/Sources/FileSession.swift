@@ -40,13 +40,35 @@ public final class FileSession {
 
     /// Opens a file at the given URL using memory-mapped I/O.
     ///
+    /// For directory bundles (e.g. `.app`), the URL is resolved to the
+    /// bundle's main executable so the raw binary can be edited.
+    ///
     /// - Parameter url: The file URL to open.
     /// - Throws: An error if the file cannot be read.
     public init(url: URL) throws {
         self.undoManager = UndoManager()
-        let data = try Data(contentsOf: url, options: .mappedIfSafe)
+        let resolvedURL = try Self.resolveURL(url)
+        let data = try Data(contentsOf: resolvedURL, options: .mappedIfSafe)
         self.pieceTable = PieceTable(data: data, undoManager: undoManager)
-        self.fileURL = url
+        self.fileURL = resolvedURL
+    }
+
+    /// Resolves a URL, handling directory bundles by finding the main executable.
+    private static func resolveURL(_ url: URL) throws -> URL {
+        var isDir: ObjCBool = false
+        guard FileManager.default.fileExists(
+            atPath: url.path, isDirectory: &isDir
+        ) else {
+            throw FileSessionError.fileNotFound(url.lastPathComponent)
+        }
+        guard isDir.boolValue else { return url }
+
+        // Try to find the main executable inside a bundle
+        if let bundle = Bundle(url: url),
+           let execURL = bundle.executableURL {
+            return execURL
+        }
+        throw FileSessionError.isDirectory(url.lastPathComponent)
     }
 
     /// Saves the current content to the existing file URL.
@@ -80,11 +102,19 @@ public final class FileSession {
 public enum FileSessionError: Error, LocalizedError {
     /// No file URL is associated with the session.
     case noFileURL
+    /// The path is a directory without a recognizable executable.
+    case isDirectory(String)
+    /// The file was not found.
+    case fileNotFound(String)
 
     public var errorDescription: String? {
         switch self {
         case .noFileURL:
             return "No file URL is set. Use Save As to specify a location."
+        case .isDirectory(let name):
+            return "\"\(name)\" is a directory and cannot be opened directly."
+        case .fileNotFound(let name):
+            return "The file \"\(name)\" was not found."
         }
     }
 }

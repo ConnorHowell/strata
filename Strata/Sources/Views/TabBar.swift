@@ -29,6 +29,7 @@ public final class TabBar: NSView {
         wantsLayer = true
         layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
         setAccessibilityIdentifier("tabBar")
+        setAccessibilityElement(true)
     }
 
     @available(*, unavailable)
