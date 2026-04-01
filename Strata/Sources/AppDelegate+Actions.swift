@@ -219,6 +219,76 @@ extension AppDelegate {
         let alert = NSAlert(error: error)
         alert.beginSheetModal(for: win)
     }
+
+    // MARK: - Update Check
+
+    /// GitHub owner/repo for release checks.
+    static let gitHubRepo = "ConnorHowell/strata"
+
+    @objc func checkForUpdatesAction() {
+        let urlString = "https://api.github.com/repos/"
+            + "\(AppDelegate.gitHubRepo)/releases/latest"
+        guard let url = URL(string: urlString) else { return }
+
+        var request = URLRequest(url: url)
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        request.timeoutInterval = 10
+
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+            DispatchQueue.main.async {
+                self?.handleUpdateResponse(data: data, error: error)
+            }
+        }.resume()
+    }
+
+    private func handleUpdateResponse(data: Data?, error: Error?) {
+        guard let win = window else { return }
+
+        if let error {
+            let alert = NSAlert()
+            alert.messageText = "Update Check Failed"
+            alert.informativeText = error.localizedDescription
+            alert.alertStyle = .warning
+            alert.beginSheetModal(for: win)
+            return
+        }
+
+        guard let data,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let tagName = json["tag_name"] as? String else {
+            let alert = NSAlert()
+            alert.messageText = "Update Check Failed"
+            alert.informativeText = "Could not read release information from GitHub."
+            alert.alertStyle = .warning
+            alert.beginSheetModal(for: win)
+            return
+        }
+
+        let remote = tagName.trimmingCharacters(in: CharacterSet(charactersIn: "vV"))
+        let current = Bundle.main.object(
+            forInfoDictionaryKey: "CFBundleShortVersionString"
+        ) as? String ?? "0.0.0"
+
+        let alert = NSAlert()
+        if remote.compare(current, options: .numeric) == .orderedDescending {
+            alert.messageText = "Update Available"
+            alert.informativeText = "Version \(remote) is available "
+                + "(you have \(current))."
+            alert.addButton(withTitle: "Open Release Page")
+            alert.addButton(withTitle: "Later")
+            alert.beginSheetModal(for: win) { response in
+                if response == .alertFirstButtonReturn,
+                   let htmlURL = json["html_url"] as? String,
+                   let url = URL(string: htmlURL) {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+        } else {
+            alert.messageText = "You\u{2019}re Up to Date"
+            alert.informativeText = "Strata \(current) is the latest version."
+            alert.beginSheetModal(for: win)
+        }
+    }
 }
 
 // MARK: - Delegate Conformances

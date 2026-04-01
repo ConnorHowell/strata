@@ -42,6 +42,11 @@ extension AppDelegate {
             action: #selector(showAboutPanel),
             keyEquivalent: ""
         )
+        menu.addItem(
+            withTitle: "Check for Updates\u{2026}",
+            action: #selector(checkForUpdatesAction),
+            keyEquivalent: ""
+        )
         menu.addItem(.separator())
         menu.addItem(
             withTitle: "Quit Strata",
