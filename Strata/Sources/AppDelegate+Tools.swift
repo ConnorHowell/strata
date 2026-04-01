@@ -374,6 +374,15 @@ extension AppDelegate: StringsSheetDelegate {
             useFile = false
         }
 
+        // Resolve data on the main thread to avoid accessing UI
+        // properties (e.g. hexGrid.selectedRange) from a background thread.
+        let regionData: Data?
+        if !useFile {
+            regionData = dataForRegion(region)
+        } else {
+            regionData = nil
+        }
+
         let progress = showProgressPanel(title: "Extracting strings\u{2026}")
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             let matches: [StringMatch]
@@ -384,7 +393,7 @@ extension AppDelegate: StringsSheetDelegate {
                     encodings: encodings
                 )
             } else {
-                guard let data = self?.dataForRegion(region) else {
+                guard let data = regionData else {
                     DispatchQueue.main.async { progress.close() }
                     return
                 }

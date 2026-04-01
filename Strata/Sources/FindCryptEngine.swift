@@ -81,7 +81,8 @@ public enum FindCryptEngine {
             let cat = sig.category
 
             // Stage 1: exact match (native byte order)
-            if let offset = findExact(in: data, pattern: sigData) {
+            let nativeOffsets = findAllExact(in: data, pattern: sigData)
+            for offset in nativeOffsets {
                 matches.append(FindCryptMatch(
                     offset: offset,
                     signatureName: sig.name,
@@ -89,14 +90,16 @@ public enum FindCryptEngine {
                     endianness: "native",
                     confidence: 1.0
                 ))
-                continue
             }
 
             // Try byte-swapped version if element size > 1
             if elemSize > 1 {
                 let swapped = byteSwap(sigBytes, elementSize: elemSize)
                 let swappedData = Data(swapped)
-                if let offset = findExact(in: data, pattern: swappedData) {
+                let swappedOffsets = findAllExact(
+                    in: data, pattern: swappedData
+                )
+                for offset in swappedOffsets {
                     matches.append(FindCryptMatch(
                         offset: offset,
                         signatureName: sig.name,
@@ -104,19 +107,20 @@ public enum FindCryptEngine {
                         endianness: "swapped",
                         confidence: 1.0
                     ))
-                    continue
                 }
             }
 
-            // Stage 2: partial match
-            if let match = findPartial(
-                in: data,
-                sigBytes: sigBytes,
-                elementSize: elemSize,
-                threshold: partialThreshold,
-                signature: sig
-            ) {
-                matches.append(match)
+            // Stage 2: partial match (only if no exact matches found)
+            if nativeOffsets.isEmpty {
+                if let match = findPartial(
+                    in: data,
+                    sigBytes: sigBytes,
+                    elementSize: elemSize,
+                    threshold: partialThreshold,
+                    signature: sig
+                ) {
+                    matches.append(match)
+                }
             }
         }
         return matches.sorted { $0.offset < $1.offset }
@@ -159,6 +163,23 @@ public enum FindCryptEngine {
             return range.lowerBound
         }
         return nil
+    }
+
+    private static func findAllExact(
+        in data: Data, pattern: Data
+    ) -> [Int] {
+        guard pattern.count <= data.count else { return [] }
+        var offsets: [Int] = []
+        var searchFrom = data.startIndex
+        while searchFrom <= data.count - pattern.count {
+            let range = searchFrom..<data.count
+            guard let found = data.range(
+                of: pattern, in: range
+            ) else { break }
+            offsets.append(found.lowerBound)
+            searchFrom = found.lowerBound + 1
+        }
+        return offsets
     }
 
     private static func byteSwap(_ bytes: [UInt8], elementSize: Int) -> [UInt8] {
