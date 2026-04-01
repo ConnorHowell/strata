@@ -21,7 +21,6 @@
 		AA000011 /* SRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011; };
 		AA000012 /* FindReplacePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012; };
 		AA000013 /* GoToOffsetSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013; };
-		AA000014 /* ChecksumPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014; };
 		AA000015 /* DiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015; };
 		AA000016 /* TabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016; };
 		AA000017 /* AppDelegate+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018; };
@@ -45,6 +44,17 @@
 		AA100005 /* SRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000005; };
 		AA100006 /* SearchEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000007; };
 		AA200001 /* StrataUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000001; };
+		AA000102 /* StringsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000101; };
+		AA000104 /* FindCryptEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000103; };
+		AA000106 /* AppDelegate+Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000105; };
+		AA000108 /* ChecksumSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000107; };
+		AA00010A /* ChecksumResultsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000109; };
+		AA00010C /* StringsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00010B; };
+		AA00010E /* StringsResultsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00010D; };
+		AA000110 /* FindCryptResultsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00010F; };
+		AA000112 /* FindCryptSignatures.json in Resources */ = {isa = PBXBuildFile; fileRef = AB000111; };
+		AA000114 /* StringsEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000113; };
+		AA000116 /* FindCryptEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC000115; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,7 +88,6 @@
 		AB000011 /* SRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRecord.swift; sourceTree = "<group>"; };
 		AB000012 /* FindReplacePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindReplacePanel.swift; sourceTree = "<group>"; };
 		AB000013 /* GoToOffsetSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoToOffsetSheet.swift; sourceTree = "<group>"; };
-		AB000014 /* ChecksumPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumPanel.swift; sourceTree = "<group>"; };
 		AB000015 /* DiffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffView.swift; sourceTree = "<group>"; };
 		AB000016 /* TabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBar.swift; sourceTree = "<group>"; };
 		AB000017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -109,6 +118,17 @@
 		B1000001 /* Strata.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Strata.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1000002 /* StrataTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StrataTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1000003 /* StrataUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StrataUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB000101 /* StringsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringsEngine.swift; sourceTree = "<group>"; };
+		AB000103 /* FindCryptEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindCryptEngine.swift; sourceTree = "<group>"; };
+		AB000105 /* AppDelegate+Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Tools.swift"; sourceTree = "<group>"; };
+		AB000107 /* ChecksumSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumSheet.swift; sourceTree = "<group>"; };
+		AB000109 /* ChecksumResultsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumResultsPanel.swift; sourceTree = "<group>"; };
+		AB00010B /* StringsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringsSheet.swift; sourceTree = "<group>"; };
+		AB00010D /* StringsResultsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringsResultsPanel.swift; sourceTree = "<group>"; };
+		AB00010F /* FindCryptResultsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindCryptResultsPanel.swift; sourceTree = "<group>"; };
+		AB000111 /* FindCryptSignatures.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = FindCryptSignatures.json; sourceTree = "<group>"; };
+		AC000113 /* StringsEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringsEngineTests.swift; sourceTree = "<group>"; };
+		AC000115 /* FindCryptEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindCryptEngineTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -173,6 +193,9 @@
 				AB000022 /* Encodings.swift */,
 				AB000031 /* SearchEngine.swift */,
 				AB000032 /* AppDelegate+Search.swift */,
+				AB000101 /* StringsEngine.swift */,
+				AB000103 /* FindCryptEngine.swift */,
+				AB000105 /* AppDelegate+Tools.swift */,
 				C0000004 /* Formats */,
 				C0000009 /* Views */,
 			);
@@ -197,6 +220,8 @@
 				AC000004 /* IntelHexTests.swift */,
 				AC000005 /* SRecordTests.swift */,
 				AC000007 /* SearchEngineTests.swift */,
+				AC000113 /* StringsEngineTests.swift */,
+				AC000115 /* FindCryptEngineTests.swift */,
 				AC000006 /* Info.plist */,
 			);
 			path = StrataTests;
@@ -226,6 +251,7 @@
 			children = (
 				AB000017 /* Info.plist */,
 				AB000026 /* Assets.xcassets */,
+				AB000111 /* FindCryptSignatures.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -235,7 +261,6 @@
 			children = (
 				AB000012 /* FindReplacePanel.swift */,
 				AB000013 /* GoToOffsetSheet.swift */,
-				AB000014 /* ChecksumPanel.swift */,
 				AB000015 /* DiffView.swift */,
 				AB000016 /* TabBar.swift */,
 			AB000020 /* DataInspector.swift */,
@@ -246,6 +271,11 @@
 				AB000028 /* MinimapView.swift */,
 				AB000029 /* MinimapRenderer.swift */,
 				AB000030 /* FindBar.swift */,
+				AB000107 /* ChecksumSheet.swift */,
+				AB000109 /* ChecksumResultsPanel.swift */,
+				AB00010B /* StringsSheet.swift */,
+				AB00010D /* StringsResultsPanel.swift */,
+				AB00010F /* FindCryptResultsPanel.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -353,6 +383,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000025 /* Assets.xcassets in Resources */,
+				AA000112 /* FindCryptSignatures.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,7 +407,6 @@
 				AA000011 /* SRecord.swift in Sources */,
 				AA000012 /* FindReplacePanel.swift in Sources */,
 				AA000013 /* GoToOffsetSheet.swift in Sources */,
-				AA000014 /* ChecksumPanel.swift in Sources */,
 				AA000015 /* DiffView.swift in Sources */,
 				AA000016 /* TabBar.swift in Sources */,
 				AA000017 /* AppDelegate+Actions.swift in Sources */,
@@ -393,6 +423,14 @@
 				AA000029 /* FindBar.swift in Sources */,
 				AA000031 /* SearchEngine.swift in Sources */,
 				AA000032 /* AppDelegate+Search.swift in Sources */,
+				AA000102 /* StringsEngine.swift in Sources */,
+				AA000104 /* FindCryptEngine.swift in Sources */,
+				AA000106 /* AppDelegate+Tools.swift in Sources */,
+				AA000108 /* ChecksumSheet.swift in Sources */,
+				AA00010A /* ChecksumResultsPanel.swift in Sources */,
+				AA00010C /* StringsSheet.swift in Sources */,
+				AA00010E /* StringsResultsPanel.swift in Sources */,
+				AA000110 /* FindCryptResultsPanel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -406,6 +444,8 @@
 				AA100004 /* IntelHexTests.swift in Sources */,
 				AA100005 /* SRecordTests.swift in Sources */,
 				AA100006 /* SearchEngineTests.swift in Sources */,
+				AA000114 /* StringsEngineTests.swift in Sources */,
+				AA000116 /* FindCryptEngineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

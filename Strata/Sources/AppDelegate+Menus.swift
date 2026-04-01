@@ -153,11 +153,6 @@ extension AppDelegate {
         let item = NSMenuItem()
         let menu = NSMenu(title: "View")
         menu.addItem(
-            withTitle: "Toggle Checksum Panel",
-            action: #selector(toggleChecksumPanelAction),
-            keyEquivalent: ""
-        )
-        menu.addItem(
             withTitle: "Toggle Insert Mode",
             action: #selector(toggleInsertModeAction),
             keyEquivalent: ""
@@ -187,6 +182,21 @@ extension AppDelegate {
         menu.addItem(
             withTitle: "Byte Statistics…",
             action: #selector(byteStatisticsAction),
+            keyEquivalent: ""
+        )
+        menu.addItem(
+            withTitle: "Generate Checksums…",
+            action: #selector(generateChecksumsAction),
+            keyEquivalent: ""
+        )
+        menu.addItem(
+            withTitle: "Strings…",
+            action: #selector(stringsAction),
+            keyEquivalent: ""
+        )
+        menu.addItem(
+            withTitle: "FindCrypt…",
+            action: #selector(findCryptAction),
             keyEquivalent: ""
         )
         menu.addItem(.separator())
