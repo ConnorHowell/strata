@@ -361,21 +361,8 @@ final class FindReplaceWindowController: NSWindowController {
         let text = intSearchField.stringValue
         guard !text.isEmpty, let value = Int64(text) else { return nil }
         let le = intByteOrderPopup.indexOfSelectedItem == 0
-        var data = Data()
-        switch intBitWidthPopup.indexOfSelectedItem {
-        case 0:
-            var val = Int8(clamping: value)
-            data.append(contentsOf: withUnsafeBytes(of: &val) { Array($0) })
-        case 1:
-            var val = le ? Int16(clamping: value).littleEndian : Int16(clamping: value).bigEndian
-            data.append(contentsOf: withUnsafeBytes(of: &val) { Array($0) })
-        case 2:
-            var val = le ? Int32(clamping: value).littleEndian : Int32(clamping: value).bigEndian
-            data.append(contentsOf: withUnsafeBytes(of: &val) { Array($0) })
-        case 3:
-            var val = le ? value.littleEndian : value.bigEndian
-            data.append(contentsOf: withUnsafeBytes(of: &val) { Array($0) })
-        default: return nil
+        guard let data = intBytes(value: value, width: intBitWidthPopup.indexOfSelectedItem, le: le) else {
+            return nil
         }
         return SearchPattern(mode: .integerNumber, data: data, mask: nil, direction: selectedDirection())
     }
@@ -401,5 +388,25 @@ final class FindReplaceWindowController: NSWindowController {
         alert.informativeText = "Please enter a value to search for."
         alert.alertStyle = .warning
         alert.beginSheetModal(for: win)
+    }
+}
+
+// MARK: - Integer Encoding Helper
+
+private func intBytes(value: Int64, width: Int, le: Bool) -> Data? {
+    switch width {
+    case 0:
+        var val = Int8(clamping: value)
+        return Data(bytes: &val, count: 1)
+    case 1:
+        var val = le ? Int16(clamping: value).littleEndian : Int16(clamping: value).bigEndian
+        return Data(bytes: &val, count: 2)
+    case 2:
+        var val = le ? Int32(clamping: value).littleEndian : Int32(clamping: value).bigEndian
+        return Data(bytes: &val, count: 4)
+    case 3:
+        var val = le ? value.littleEndian : value.bigEndian
+        return Data(bytes: &val, count: 8)
+    default: return nil
     }
 }
